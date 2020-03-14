@@ -14,12 +14,170 @@ var Tess2 = (function (exports) {
 	    BOUNDARY_CONTOURS: 2,
 	};
 
-	var assert$1 = function(cond) {
+	function assert (cond) {
 		if (!cond) {
 			throw "Assertion Failed!";
 		}
-	};
-	function TESSvertex$1() {
+	}
+
+	class Geom {
+		static vertEq (u, v) {
+			return u.s === v.s && u.t === v.t;
+		}
+		static vertLeq(u, v) {
+			return u.s < v.s || (u.s === v.s && u.t <= v.t);
+		}
+		static transLeq(u, v) {
+			return u.t < v.t || (u.t === v.t && u.s <= v.s);
+		}
+		static edgeGoesLeft(e) {
+			return Geom.vertLeq(e.Dst, e.Org);
+		}
+		static edgeGoesRight(e) {
+			return Geom.vertLeq(e.Org, e.Dst);
+		}
+		static vertL1dist(u, v) {
+			return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
+		}
+		static edgeEval(u, v, w) {
+			assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
+			var gapL = v.s - u.s;
+			var gapR = w.s - v.s;
+			if (gapL + gapR > 0.0) {
+				if (gapL < gapR) {
+					return v.t - u.t + (u.t - w.t) * (gapL / (gapL + gapR));
+				} else {
+					return v.t - w.t + (w.t - u.t) * (gapR / (gapL + gapR));
+				}
+			}
+			return 0.0;
+		}
+		static edgeSign(u, v, w) {
+			assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
+			var gapL = v.s - u.s;
+			var gapR = w.s - v.s;
+			if (gapL + gapR > 0.0) {
+				return (v.t - w.t) * gapL + (v.t - u.t) * gapR;
+			}
+			return 0.0;
+		}
+		static transEval(u, v, w) {
+			assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
+			var gapL = v.t - u.t;
+			var gapR = w.t - v.t;
+			if (gapL + gapR > 0.0) {
+				if (gapL < gapR) {
+					return v.s - u.s + (u.s - w.s) * (gapL / (gapL + gapR));
+				} else {
+					return v.s - w.s + (w.s - u.s) * (gapR / (gapL + gapR));
+				}
+			}
+			return 0.0;
+		}
+		static transSign(u, v, w) {
+			assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
+			var gapL = v.t - u.t;
+			var gapR = w.t - v.t;
+			if (gapL + gapR > 0.0) {
+				return (v.s - w.s) * gapL + (v.s - u.s) * gapR;
+			}
+			return 0.0;
+		}
+		static vertCCW(u, v, w) {
+			return u.s * (v.t - w.t) + v.s * (w.t - u.t) + w.s * (u.t - v.t) >= 0.0;
+		}
+		static interpolate(a, x, b, y) {
+			return (
+				(a = a < 0 ? 0 : a),
+				(b = b < 0 ? 0 : b),
+				a <= b
+					? b === 0
+						? (x + y) / 2
+						: x + (y - x) * (a / (a + b))
+					: y + (x - y) * (b / (a + b))
+			);
+		}
+		static intersect(o1, d1, o2, d2, v) {
+			var z1, z2;
+			var t;
+			if (!Geom.vertLeq(o1, d1)) {
+				t = o1;
+				o1 = d1;
+				d1 = t;
+			}
+			if (!Geom.vertLeq(o2, d2)) {
+				t = o2;
+				o2 = d2;
+				d2 = t;
+			}
+			if (!Geom.vertLeq(o1, o2)) {
+				t = o1;
+				o1 = o2;
+				o2 = t;
+				t = d1;
+				d1 = d2;
+				d2 = t;
+			}
+			if (!Geom.vertLeq(o2, d1)) {
+				v.s = (o2.s + d1.s) / 2;
+			} else if (Geom.vertLeq(d1, d2)) {
+				z1 = Geom.edgeEval(o1, o2, d1);
+				z2 = Geom.edgeEval(o2, d1, d2);
+				if (z1 + z2 < 0) {
+					z1 = -z1;
+					z2 = -z2;
+				}
+				v.s = Geom.interpolate(z1, o2.s, z2, d1.s);
+			} else {
+				z1 = Geom.edgeSign(o1, o2, d1);
+				z2 = -Geom.edgeSign(o1, d2, d1);
+				if (z1 + z2 < 0) {
+					z1 = -z1;
+					z2 = -z2;
+				}
+				v.s = Geom.interpolate(z1, o2.s, z2, d2.s);
+			}
+			if (!Geom.transLeq(o1, d1)) {
+				t = o1;
+				o1 = d1;
+				d1 = t;
+			}
+			if (!Geom.transLeq(o2, d2)) {
+				t = o2;
+				o2 = d2;
+				d2 = t;
+			}
+			if (!Geom.transLeq(o1, o2)) {
+				t = o1;
+				o1 = o2;
+				o2 = t;
+				t = d1;
+				d1 = d2;
+				d2 = t;
+			}
+			if (!Geom.transLeq(o2, d1)) {
+				v.t = (o2.t + d1.t) / 2;
+			} else if (Geom.transLeq(d1, d2)) {
+				z1 = Geom.transEval(o1, o2, d1);
+				z2 = Geom.transEval(o2, d1, d2);
+				if (z1 + z2 < 0) {
+					z1 = -z1;
+					z2 = -z2;
+				}
+				v.t = Geom.interpolate(z1, o2.t, z2, d1.t);
+			} else {
+				z1 = Geom.transSign(o1, o2, d1);
+				z2 = -Geom.transSign(o1, d2, d1);
+				if (z1 + z2 < 0) {
+					z1 = -z1;
+					z2 = -z2;
+				}
+				v.t = Geom.interpolate(z1, o2.t, z2, d2.t);
+			}
+		}
+	}
+
+	function TESSvertex() {
 		this.next = null;
 		this.prev = null;
 		this.anEdge = null;
@@ -101,7 +259,7 @@ var Tess2 = (function (exports) {
 		} ,
 	};
 	function TESSmesh() {
-		var v = new TESSvertex$1();
+		var v = new TESSvertex();
 		var f = new TESSface();
 		var e = new TESShalfEdge(0);
 		var eSym = new TESShalfEdge(1);
@@ -171,7 +329,7 @@ var Tess2 = (function (exports) {
 		},
 		makeVertex_: function(newVertex, eOrig, vNext) {
 			var vNew = newVertex;
-			assert$1(vNew !== null);
+			assert(vNew);
 			var vPrev = vNext.prev;
 			vNew.prev = vPrev;
 			vPrev.next = vNew;
@@ -186,7 +344,7 @@ var Tess2 = (function (exports) {
 		},
 		makeFace_: function(newFace, eOrig, fNext) {
 			var fNew = newFace;
-			assert$1(fNew !== null);
+			assert(fNew !== null);
 			var fPrev = fNext.prev;
 			fNew.prev = fPrev;
 			fPrev.next = fNew;
@@ -236,8 +394,8 @@ var Tess2 = (function (exports) {
 			fPrev.next = fNext;
 		},
 		makeEdge: function() {
-			var newVertex1 = new TESSvertex$1();
-			var newVertex2 = new TESSvertex$1();
+			var newVertex1 = new TESSvertex();
+			var newVertex2 = new TESSvertex();
 			var newFace = new TESSface();
 			var e = this.makeEdge_(this.eHead);
 			this.makeVertex_(newVertex1, e, this.vHead);
@@ -259,7 +417,7 @@ var Tess2 = (function (exports) {
 			}
 			this.splice_(eDst, eOrg);
 			if (!joiningVertices) {
-				var newVertex = new TESSvertex$1();
+				var newVertex = new TESSvertex();
 				this.makeVertex_(newVertex, eDst, eOrg.Org);
 				eOrg.Org.anEdge = eOrg;
 			}
@@ -302,7 +460,7 @@ var Tess2 = (function (exports) {
 			var eNewSym = eNew.Sym;
 			this.splice_(eNew, eOrg.Lnext);
 			eNew.Org = eOrg.Dst;
-			var newVertex = new TESSvertex$1();
+			var newVertex = new TESSvertex();
 			this.makeVertex_(newVertex, eNewSym, eNew.Org);
 			eNew.Lface = eNewSym.Lface = eOrg.Lface;
 			return eNew;
@@ -427,43 +585,43 @@ var Tess2 = (function (exports) {
 			var f, fPrev, v, vPrev, e, ePrev;
 			fPrev = fHead;
 			for (fPrev = fHead; (f = fPrev.next) !== fHead; fPrev = f) {
-				assert$1(f.prev === fPrev);
+				assert(f.prev === fPrev);
 				e = f.anEdge;
 				do {
-					assert$1(e.Sym !== e);
-					assert$1(e.Sym.Sym === e);
-					assert$1(e.Lnext.Onext.Sym === e);
-					assert$1(e.Onext.Sym.Lnext === e);
-					assert$1(e.Lface === f);
+					assert(e.Sym !== e);
+					assert(e.Sym.Sym === e);
+					assert(e.Lnext.Onext.Sym === e);
+					assert(e.Onext.Sym.Lnext === e);
+					assert(e.Lface === f);
 					e = e.Lnext;
 				} while (e !== f.anEdge);
 			}
-			assert$1(f.prev === fPrev && f.anEdge === null);
+			assert(f.prev === fPrev && f.anEdge === null);
 			vPrev = vHead;
 			for (vPrev = vHead; (v = vPrev.next) !== vHead; vPrev = v) {
-				assert$1(v.prev === vPrev);
+				assert(v.prev === vPrev);
 				e = v.anEdge;
 				do {
-					assert$1(e.Sym !== e);
-					assert$1(e.Sym.Sym === e);
-					assert$1(e.Lnext.Onext.Sym === e);
-					assert$1(e.Onext.Sym.Lnext === e);
-					assert$1(e.Org === v);
+					assert(e.Sym !== e);
+					assert(e.Sym.Sym === e);
+					assert(e.Lnext.Onext.Sym === e);
+					assert(e.Onext.Sym.Lnext === e);
+					assert(e.Org === v);
 					e = e.Onext;
 				} while (e !== v.anEdge);
 			}
-			assert$1(v.prev === vPrev && v.anEdge === null);
+			assert(v.prev === vPrev && v.anEdge === null);
 			ePrev = eHead;
 			for (ePrev = eHead; (e = ePrev.next) !== eHead; ePrev = e) {
-				assert$1(e.Sym.next === ePrev.Sym);
-				assert$1(e.Sym !== e);
-				assert$1(e.Sym.Sym === e);
-				assert$1(e.Org !== null);
-				assert$1(e.Dst !== null);
-				assert$1(e.Lnext.Onext.Sym === e);
-				assert$1(e.Onext.Sym.Lnext === e);
+				assert(e.Sym.next === ePrev.Sym);
+				assert(e.Sym !== e);
+				assert(e.Sym.Sym === e);
+				assert(e.Org !== null);
+				assert(e.Dst !== null);
+				assert(e.Lnext.Onext.Sym === e);
+				assert(e.Onext.Sym.Lnext === e);
 			}
-			assert$1(
+			assert(
 				e.Sym.next === ePrev.Sym &&
 					e.Sym === this.eHeadSym &&
 					e.Sym.Sym === e &&
@@ -474,159 +632,212 @@ var Tess2 = (function (exports) {
 			);
 		},
 	};
-
-	class Geom$1 {
-		static vertLeq(u, v) {
-			return u.s < v.s || (u.s === v.s && u.t <= v.t);
-		}
-		static transLeq(u, v) {
-			return u.t < v.t || (u.t === v.t && u.s <= v.s);
-		}
-		static edgeGoesLeft(e) {
-			return Geom$1.vertLeq(e.Dst, e.Org);
-		}
-		static edgeGoesRight(e) {
-			return Geom$1.vertLeq(e.Org, e.Dst);
-		}
-		static vertL1dist(u, v) {
-			return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
-		}
-		static edgeEval(u, v, w) {
-			assert(Geom$1.vertLeq(u, v) && Geom$1.vertLeq(v, w));
-			var gapL = v.s - u.s;
-			var gapR = w.s - v.s;
-			if (gapL + gapR > 0.0) {
-				if (gapL < gapR) {
-					return v.t - u.t + (u.t - w.t) * (gapL / (gapL + gapR));
-				} else {
-					return v.t - w.t + (w.t - u.t) * (gapR / (gapL + gapR));
+	function DictNode() {
+		this.key = null;
+		this.next = null;
+		this.prev = null;
+	}
+	function Dict(frame, leq) {
+		this.head = new DictNode();
+		this.head.next = this.head;
+		this.head.prev = this.head;
+		this.frame = frame;
+		this.leq = leq;
+	}
+	Dict.prototype = {
+		min: function() {
+			return this.head.next;
+		},
+		max: function() {
+			return this.head.prev;
+		},
+		insert: function(k) {
+			return this.insertBefore(this.head, k);
+		},
+		search: function(key) {
+			var node = this.head;
+			do {
+				node = node.next;
+			} while (node.key !== null && !this.leq(this.frame, key, node.key));
+			return node;
+		},
+		insertBefore: function(node, key) {
+			do {
+				node = node.prev;
+			} while (node.key !== null && !this.leq(this.frame, node.key, key));
+			var newNode = new DictNode();
+			newNode.key = key;
+			newNode.next = node.next;
+			node.next.prev = newNode;
+			newNode.prev = node;
+			node.next = newNode;
+			return newNode;
+		},
+		delete: function(node) {
+			node.next.prev = node.prev;
+			node.prev.next = node.next;
+		},
+	};
+	function PQnode() {
+		this.handle = null;
+	}
+	function PQhandleElem() {
+		this.key = null;
+		this.node = null;
+	}
+	function PriorityQ(size, leq) {
+		this.size = 0;
+		this.max = size;
+		this.nodes = [];
+		this.nodes.length = size + 1;
+		var i;
+		for (i = 0; i < this.nodes.length; i++) this.nodes[i] = new PQnode();
+		this.handles = [];
+		this.handles.length = size + 1;
+		for (i = 0; i < this.handles.length; i++)
+			this.handles[i] = new PQhandleElem();
+		this.initialized = false;
+		this.freeList = 0;
+		this.leq = leq;
+		this.nodes[1].handle = 1;
+		this.handles[1].key = null;
+	}
+	PriorityQ.prototype = {
+		floatDown_: function(curr) {
+			var n = this.nodes;
+			var h = this.handles;
+			var hCurr, hChild;
+			var child;
+			hCurr = n[curr].handle;
+			for (;;) {
+				child = curr << 1;
+				if (
+					child < this.size &&
+					this.leq(h[n[child + 1].handle].key, h[n[child].handle].key)
+				) {
+					++child;
 				}
-			}
-			return 0.0;
-		}
-		static edgeSign(u, v, w) {
-			assert(Geom$1.vertLeq(u, v) && Geom$1.vertLeq(v, w));
-			var gapL = v.s - u.s;
-			var gapR = w.s - v.s;
-			if (gapL + gapR > 0.0) {
-				return (v.t - w.t) * gapL + (v.t - u.t) * gapR;
-			}
-			return 0.0;
-		}
-		static transEval(u, v, w) {
-			assert(Geom$1.transLeq(u, v) && Geom$1.transLeq(v, w));
-			var gapL = v.t - u.t;
-			var gapR = w.t - v.t;
-			if (gapL + gapR > 0.0) {
-				if (gapL < gapR) {
-					return v.s - u.s + (u.s - w.s) * (gapL / (gapL + gapR));
-				} else {
-					return v.s - w.s + (w.s - u.s) * (gapR / (gapL + gapR));
+				assert(child <= this.max);
+				hChild = n[child].handle;
+				if (child > this.size || this.leq(h[hCurr].key, h[hChild].key)) {
+					n[curr].handle = hCurr;
+					h[hCurr].node = curr;
+					break;
 				}
+				n[curr].handle = hChild;
+				h[hChild].node = curr;
+				curr = child;
 			}
-			return 0.0;
-		}
-		static transSign(u, v, w) {
-			assert(Geom$1.transLeq(u, v) && Geom$1.transLeq(v, w));
-			var gapL = v.t - u.t;
-			var gapR = w.t - v.t;
-			if (gapL + gapR > 0.0) {
-				return (v.s - w.s) * gapL + (v.s - u.s) * gapR;
-			}
-			return 0.0;
-		}
-		static vertCCW(u, v, w) {
-			return u.s * (v.t - w.t) + v.s * (w.t - u.t) + w.s * (u.t - v.t) >= 0.0;
-		}
-		static interpolate(a, x, b, y) {
-			return (
-				(a = a < 0 ? 0 : a),
-				(b = b < 0 ? 0 : b),
-				a <= b
-					? b === 0
-						? (x + y) / 2
-						: x + (y - x) * (a / (a + b))
-					: y + (x - y) * (b / (a + b))
-			);
-		}
-		static intersect(o1, d1, o2, d2, v) {
-			var z1, z2;
-			var t;
-			if (!Geom$1.vertLeq(o1, d1)) {
-				t = o1;
-				o1 = d1;
-				d1 = t;
-			}
-			if (!Geom$1.vertLeq(o2, d2)) {
-				t = o2;
-				o2 = d2;
-				d2 = t;
-			}
-			if (!Geom$1.vertLeq(o1, o2)) {
-				t = o1;
-				o1 = o2;
-				o2 = t;
-				t = d1;
-				d1 = d2;
-				d2 = t;
-			}
-			if (!Geom$1.vertLeq(o2, d1)) {
-				v.s = (o2.s + d1.s) / 2;
-			} else if (Geom$1.vertLeq(d1, d2)) {
-				z1 = Geom$1.edgeEval(o1, o2, d1);
-				z2 = Geom$1.edgeEval(o2, d1, d2);
-				if (z1 + z2 < 0) {
-					z1 = -z1;
-					z2 = -z2;
+		},
+		floatUp_: function(curr) {
+			var n = this.nodes;
+			var h = this.handles;
+			var hCurr, hParent;
+			var parent;
+			hCurr = n[curr].handle;
+			for (;;) {
+				parent = curr >> 1;
+				hParent = n[parent].handle;
+				if (parent === 0 || this.leq(h[hParent].key, h[hCurr].key)) {
+					n[curr].handle = hCurr;
+					h[hCurr].node = curr;
+					break;
 				}
-				v.s = Geom$1.interpolate(z1, o2.s, z2, d1.s);
+				n[curr].handle = hParent;
+				h[hParent].node = curr;
+				curr = parent;
+			}
+		},
+		init: function() {
+			for (var i = this.size; i >= 1; --i) {
+				this.floatDown_(i);
+			}
+			this.initialized = true;
+		},
+		min: function() {
+			return this.handles[this.nodes[1].handle].key;
+		},
+		insert: function(keyNew) {
+			var curr;
+			var free;
+			curr = ++this.size;
+			if (curr * 2 > this.max) {
+				this.max *= 2;
+				var i;
+				var s;
+				s = this.nodes.length;
+				this.nodes.length = this.max + 1;
+				for (i = s; i < this.nodes.length; i++)
+					this.nodes[i] = new PQnode();
+				s = this.handles.length;
+				this.handles.length = this.max + 1;
+				for (i = s; i < this.handles.length; i++)
+					this.handles[i] = new PQhandleElem();
+			}
+			if (this.freeList === 0) {
+				free = curr;
 			} else {
-				z1 = Geom$1.edgeSign(o1, o2, d1);
-				z2 = -Geom$1.edgeSign(o1, d2, d1);
-				if (z1 + z2 < 0) {
-					z1 = -z1;
-					z2 = -z2;
+				free = this.freeList;
+				this.freeList = this.handles[free].node;
+			}
+			this.nodes[curr].handle = free;
+			this.handles[free].node = curr;
+			this.handles[free].key = keyNew;
+			if (this.initialized) {
+				this.floatUp_(curr);
+			}
+			return free;
+		},
+		extractMin: function() {
+			var n = this.nodes;
+			var h = this.handles;
+			var hMin = n[1].handle;
+			var min = h[hMin].key;
+			if (this.size > 0) {
+				n[1].handle = n[this.size].handle;
+				h[n[1].handle].node = 1;
+				h[hMin].key = null;
+				h[hMin].node = this.freeList;
+				this.freeList = hMin;
+				--this.size;
+				if (this.size > 0) {
+					this.floatDown_(1);
 				}
-				v.s = Geom$1.interpolate(z1, o2.s, z2, d2.s);
 			}
-			if (!Geom$1.transLeq(o1, d1)) {
-				t = o1;
-				o1 = d1;
-				d1 = t;
-			}
-			if (!Geom$1.transLeq(o2, d2)) {
-				t = o2;
-				o2 = d2;
-				d2 = t;
-			}
-			if (!Geom$1.transLeq(o1, o2)) {
-				t = o1;
-				o1 = o2;
-				o2 = t;
-				t = d1;
-				d1 = d2;
-				d2 = t;
-			}
-			if (!Geom$1.transLeq(o2, d1)) {
-				v.t = (o2.t + d1.t) / 2;
-			} else if (Geom$1.transLeq(d1, d2)) {
-				z1 = Geom$1.transEval(o1, o2, d1);
-				z2 = Geom$1.transEval(o2, d1, d2);
-				if (z1 + z2 < 0) {
-					z1 = -z1;
-					z2 = -z2;
+			return min;
+		},
+		delete: function(hCurr) {
+			var n = this.nodes;
+			var h = this.handles;
+			var curr;
+			assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key !== null);
+			curr = h[hCurr].node;
+			n[curr].handle = n[this.size].handle;
+			h[n[curr].handle].node = curr;
+			--this.size;
+			if (curr <= this.size) {
+				if (
+					curr <= 1 ||
+					this.leq(h[n[curr >> 1].handle].key, h[n[curr].handle].key)
+				) {
+					this.floatDown_(curr);
+				} else {
+					this.floatUp_(curr);
 				}
-				v.t = Geom$1.interpolate(z1, o2.t, z2, d1.t);
-			} else {
-				z1 = Geom$1.transSign(o1, o2, d1);
-				z2 = -Geom$1.transSign(o1, d2, d1);
-				if (z1 + z2 < 0) {
-					z1 = -z1;
-					z2 = -z2;
-				}
-				v.t = Geom$1.interpolate(z1, o2.t, z2, d2.t);
 			}
-		}
+			h[hCurr].key = null;
+			h[hCurr].node = this.freeList;
+			this.freeList = hCurr;
+		},
+	};
+	function ActiveRegion() {
+		this.eUp = null;
+		this.nodeUp = null;
+		this.windingNumber = 0;
+		this.inside = false;
+		this.sentinel = false;
+		this.dirty = false;
+		this.fixUpperEdge = false;
 	}
 
 	class Sweep {
@@ -713,15 +924,15 @@ var Tess2 = (function (exports) {
 		}
 		static isWindingInside(tess, n) {
 			switch (tess.windingRule) {
-				case Tess2.WINDING_ODD:
+				case WINDING.ODD:
 					return (n & 1) !== 0;
-				case Tess2.WINDING_NONZERO:
+				case WINDING.NONZERO:
 					return n !== 0;
-				case Tess2.WINDING_POSITIVE:
+				case WINDING.POSITIVE:
 					return n > 0;
-				case Tess2.WINDING_NEGATIVE:
+				case WINDING.NEGATIVE:
 					return n < 0;
-				case Tess2.WINDING_ABS_GEQ_TWO:
+				case WINDING.ABS_GEQ_TWO:
 					return n >= 2 || n <= -2;
 			}
 			assert(false);
@@ -1594,21 +1805,21 @@ var Tess2 = (function (exports) {
 	        if (!(up.Lnext !== up && up.Lnext.Lnext !== up)) {
 	            throw "Mono region invalid";
 	        }
-	        for (; Geom$1.vertLeq(up.Dst, up.Org); up = up.Lprev)
+	        for (; Geom.vertLeq(up.Dst, up.Org); up = up.Lprev)
 	            ;
-	        for (; Geom$1.vertLeq(up.Org, up.Dst); up = up.Lnext)
+	        for (; Geom.vertLeq(up.Org, up.Dst); up = up.Lnext)
 	            ;
 	        lo = up.Lprev;
 	        let tempHalfEdge = undefined;
 	        while (up.Lnext !== lo) {
-	            if (Geom$1.vertLeq(up.Dst, lo.Org)) {
+	            if (Geom.vertLeq(up.Dst, lo.Org)) {
 	                /* up->Dst is on the left.  It is safe to form triangles from lo->Org.
 	                 * The EdgeGoesLeft test guarantees progress even when some triangles
 	                 * are CW, given that the upper and lower chains are truly monotone.
 	                 */
 	                while (lo.Lnext !== up &&
-	                    (Geom$1.edgeGoesLeft(lo.Lnext) ||
-	                        Geom$1.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0)) {
+	                    (Geom.edgeGoesLeft(lo.Lnext) ||
+	                        Geom.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0)) {
 	                    tempHalfEdge = mesh.connect(lo.Lnext, lo);
 	                    //if (tempHalfEdge == NULL) return 0;
 	                    lo = tempHalfEdge.Sym;
@@ -1618,8 +1829,8 @@ var Tess2 = (function (exports) {
 	            else {
 	                /* lo->Org is on the left.  We can make CCW triangles from up->Dst. */
 	                while (lo.Lnext !== up &&
-	                    (Geom$1.edgeGoesRight(up.Lprev) ||
-	                        Geom$1.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0)) {
+	                    (Geom.edgeGoesRight(up.Lprev) ||
+	                        Geom.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0)) {
 	                    tempHalfEdge = mesh.connect(up, up.Lprev);
 	                    //if (tempHalfEdge == NULL) return 0;
 	                    up = tempHalfEdge.Sym;
@@ -1742,7 +1953,7 @@ var Tess2 = (function (exports) {
 	                faceVerts++;
 	                edge = edge.Lnext;
 	            } while (edge !== f.anEdge);
-	            if (!(faceVerts > polySize)) {
+	            if ((faceVerts > polySize)) {
 	                throw `Face vertex greater that support polygon`;
 	            }
 	            f.n = maxFaceCount;
@@ -2056,6 +2267,7 @@ var Tess2 = (function (exports) {
 	    };
 	}
 
+	exports.Geom = Geom;
 	exports.MODE = MODE;
 	exports.Tesselator = Tesselator;
 	exports.WINDING = WINDING;

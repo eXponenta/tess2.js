@@ -1,4 +1,10 @@
+import {assert} from "./assert";
+
 export class Geom {
+
+	static vertEq (u, v) {
+		return u.s === v.s && u.t === v.t;
+	}
 
 	/* Returns TRUE if u is lexicographically <= v. */
 	static vertLeq(u, v) {

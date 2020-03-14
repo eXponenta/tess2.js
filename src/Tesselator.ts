@@ -518,7 +518,7 @@ export class Tesselator {
 				edge = edge.Lnext;
 			} while (edge !== f.anEdge);
 
-			if (!(faceVerts > polySize)) {
+			if ((faceVerts > polySize)) {
 				throw `Face vertex greater that support polygon`;
 			}
 

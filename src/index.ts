@@ -31,11 +31,11 @@
  ** The code is based on GLU libtess by Eric Veach, July 1994
  */
 
- 
 import { Tesselator } from "./Tesselator";
 import { WINDING, MODE } from './constants';
 import { V3 } from "./type";
 
+export * from "./Geom";
 export interface IOptions {
 	windingRule?: number,
 	elementType?: number,

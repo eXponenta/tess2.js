@@ -1,3 +1,8 @@
+import { Geom } from "./Geom";
+import { assert } from "./assert";
+import { PriorityQ, Dict, ActiveRegion, TESSvertex} from "./tess2";
+import { WINDING, MODE } from "./constants";
+
 export class Sweep {
 	static regionBelow(r) {
 		return r.nodeUp.prev.key;
@@ -173,15 +178,15 @@ export class Sweep {
 	//static int IsWindingInside( TESStesselator *tess, int n )
 	static isWindingInside(tess, n) {
 		switch (tess.windingRule) {
-			case Tess2.WINDING_ODD:
+			case WINDING.ODD:
 				return (n & 1) !== 0;
-			case Tess2.WINDING_NONZERO:
+			case WINDING.NONZERO:
 				return n !== 0;
-			case Tess2.WINDING_POSITIVE:
+			case WINDING.POSITIVE:
 				return n > 0;
-			case Tess2.WINDING_NEGATIVE:
+			case WINDING.NEGATIVE:
 				return n < 0;
-			case Tess2.WINDING_ABS_GEQ_TWO:
+			case WINDING.ABS_GEQ_TWO:
 				return n >= 2 || n <= -2;
 		}
 		assert(false);

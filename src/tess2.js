@@ -1,11 +1,8 @@
+import {Geom} from "./Geom";
+import {assert} from "./assert";
 
 /* Internal */
 
-var assert = function(cond) {
-	if (!cond) {
-		throw "Assertion Failed!";
-	}
-};
 
 /* The mesh structure is similar in spirit, notation, and operations
  * to the "quad-edge" structure (see L. Guibas and J. Stolfi, Primitives
@@ -73,7 +70,7 @@ var assert = function(cond) {
  * a region which is not part of the output polygon.
  */
 
-function TESSvertex() {
+export function TESSvertex() {
 	this.next = null; /* next vertex (never NULL) */
 	this.prev = null; /* previous vertex (never NULL) */
 	this.anEdge = null; /* a half-edge with this origin */
@@ -349,7 +346,8 @@ TESSmesh.prototype = {
 	//static void MakeVertex( TESSvertex *newVertex, TESShalfEdge *eOrig, TESSvertex *vNext )
 	makeVertex_: function(newVertex, eOrig, vNext) {
 		var vNew = newVertex;
-		assert(vNew !== null);
+		
+		assert(vNew);
 
 		/* insert in circular doubly-linked list before vNext */
 		var vPrev = vNext.prev;
@@ -875,7 +873,7 @@ function DictNode() {
 	this.prev = null;
 }
 
-function Dict(frame, leq) {
+export function Dict(frame, leq) {
 	this.head = new DictNode();
 	this.head.next = this.head;
 	this.head.prev = this.head;
@@ -939,7 +937,7 @@ function PQhandleElem() {
 	this.node = null;
 }
 
-function PriorityQ(size, leq) {
+export function PriorityQ(size, leq) {
 	this.size = 0;
 	this.max = size;
 
@@ -1123,7 +1121,7 @@ PriorityQ.prototype = {
  * sweep line crosses each vertex, we update the affected regions.
  */
 
-function ActiveRegion() {
+export function ActiveRegion() {
 	this.eUp = null; /* upper edge, directed right to left */
 	this.nodeUp = null; /* dictionary node corresponding to eUp */
 	this.windingNumber = 0;
