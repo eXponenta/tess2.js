@@ -37,7 +37,7 @@
 	var Tess2 = {};
 	var Geom = {};
 
-	module.exports = Tess2;
+	export default Tess2;
 	
 	Tess2.WINDING_ODD = 0;
 	Tess2.WINDING_NONZERO = 1;
@@ -3137,7 +3137,7 @@
 			this.vertices.length = maxVertexCount * vertexSize;
 
 	/*		tess->vertexIndices = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
-																    sizeof(TESSindex) * tess->vertexCount );
+																	sizeof(TESSindex) * tess->vertexCount );
 			if (!tess->vertexIndices)
 			{
 				tess->outOfMemory = 1;
@@ -3251,7 +3251,7 @@
 			this.vertices.length = this.vertexCount * vertexSize;
 
 	/*		tess->vertexIndices = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
-																    sizeof(TESSindex) * tess->vertexCount );
+																	sizeof(TESSindex) * tess->vertexCount );
 			if (!tess->vertexIndices)
 			{
 				tess->outOfMemory = 1;
