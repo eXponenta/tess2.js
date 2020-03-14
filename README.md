@@ -1,5 +1,11 @@
-tess2.js
+**DOESN'T WORKS CORRECTLY NOW**
+
+Use original lib instead.
+
+tess2-ts
 ========
+
+Port of tess2.js to typescript
 
 The tess2.js library performs polygon boolean operations and tesselation to triangles and convex polygons. It is a port of libtess2, which is turn is a cleaned up version of the stock GLU tesselator. The original code was written Eric Veach in 1994. The greatest thing about tess2.js is that it handles all kinds of input like self-intersecting polygons or any nomber of holes and contours.
 
