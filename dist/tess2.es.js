@@ -11,44 +11,12 @@ const MODE = {
     BOUNDARY_CONTOURS: 2,
 };
 
-var Tess2 = {};
-var Geom = {};
-Tess2.WINDING_ODD = 0;
-Tess2.WINDING_NONZERO = 1;
-Tess2.WINDING_POSITIVE = 2;
-Tess2.WINDING_NEGATIVE = 3;
-Tess2.WINDING_ABS_GEQ_TWO = 4;
-Tess2.POLYGONS = 0;
-Tess2.CONNECTED_POLYGONS = 1;
-Tess2.BOUNDARY_CONTOURS = 2;
-Tess2.tesselate = function(opts) {
-	var debug = opts.debug || false;
-	var tess = new Tesselator();
-	for (var i = 0; i < opts.contours.length; i++) {
-		tess.addContour(opts.vertexSize || 2, opts.contours[i]);
-	}
-	tess.tesselate(
-		opts.windingRule || Tess2.WINDING_ODD,
-		opts.elementType || Tess2.POLYGONS,
-		opts.polySize || 3,
-		opts.vertexSize || 2,
-		opts.normal || [0, 0, 1],
-	);
-	return {
-		vertices: tess.vertices,
-		vertexIndices: tess.vertexIndices,
-		vertexCount: tess.vertexCount,
-		elements: tess.elements,
-		elementCount: tess.elementCount,
-		mesh: debug ? tess.mesh : undefined,
-	};
-};
-var assert = function(cond) {
+var assert$1 = function(cond) {
 	if (!cond) {
 		throw "Assertion Failed!";
 	}
 };
-function TESSvertex() {
+function TESSvertex$1() {
 	this.next = null;
 	this.prev = null;
 	this.anEdge = null;
@@ -130,7 +98,7 @@ TESShalfEdge.prototype = {
 	} ,
 };
 function TESSmesh() {
-	var v = new TESSvertex();
+	var v = new TESSvertex$1();
 	var f = new TESSface();
 	var e = new TESShalfEdge(0);
 	var eSym = new TESShalfEdge(1);
@@ -200,7 +168,7 @@ TESSmesh.prototype = {
 	},
 	makeVertex_: function(newVertex, eOrig, vNext) {
 		var vNew = newVertex;
-		assert(vNew !== null);
+		assert$1(vNew !== null);
 		var vPrev = vNext.prev;
 		vNew.prev = vPrev;
 		vPrev.next = vNew;
@@ -215,7 +183,7 @@ TESSmesh.prototype = {
 	},
 	makeFace_: function(newFace, eOrig, fNext) {
 		var fNew = newFace;
-		assert(fNew !== null);
+		assert$1(fNew !== null);
 		var fPrev = fNext.prev;
 		fNew.prev = fPrev;
 		fPrev.next = fNew;
@@ -265,8 +233,8 @@ TESSmesh.prototype = {
 		fPrev.next = fNext;
 	},
 	makeEdge: function() {
-		var newVertex1 = new TESSvertex();
-		var newVertex2 = new TESSvertex();
+		var newVertex1 = new TESSvertex$1();
+		var newVertex2 = new TESSvertex$1();
 		var newFace = new TESSface();
 		var e = this.makeEdge_(this.eHead);
 		this.makeVertex_(newVertex1, e, this.vHead);
@@ -288,7 +256,7 @@ TESSmesh.prototype = {
 		}
 		this.splice_(eDst, eOrg);
 		if (!joiningVertices) {
-			var newVertex = new TESSvertex();
+			var newVertex = new TESSvertex$1();
 			this.makeVertex_(newVertex, eDst, eOrg.Org);
 			eOrg.Org.anEdge = eOrg;
 		}
@@ -331,7 +299,7 @@ TESSmesh.prototype = {
 		var eNewSym = eNew.Sym;
 		this.splice_(eNew, eOrg.Lnext);
 		eNew.Org = eOrg.Dst;
-		var newVertex = new TESSvertex();
+		var newVertex = new TESSvertex$1();
 		this.makeVertex_(newVertex, eNewSym, eNew.Org);
 		eNew.Lface = eNewSym.Lface = eOrg.Lface;
 		return eNew;
@@ -456,43 +424,43 @@ TESSmesh.prototype = {
 		var f, fPrev, v, vPrev, e, ePrev;
 		fPrev = fHead;
 		for (fPrev = fHead; (f = fPrev.next) !== fHead; fPrev = f) {
-			assert(f.prev === fPrev);
+			assert$1(f.prev === fPrev);
 			e = f.anEdge;
 			do {
-				assert(e.Sym !== e);
-				assert(e.Sym.Sym === e);
-				assert(e.Lnext.Onext.Sym === e);
-				assert(e.Onext.Sym.Lnext === e);
-				assert(e.Lface === f);
+				assert$1(e.Sym !== e);
+				assert$1(e.Sym.Sym === e);
+				assert$1(e.Lnext.Onext.Sym === e);
+				assert$1(e.Onext.Sym.Lnext === e);
+				assert$1(e.Lface === f);
 				e = e.Lnext;
 			} while (e !== f.anEdge);
 		}
-		assert(f.prev === fPrev && f.anEdge === null);
+		assert$1(f.prev === fPrev && f.anEdge === null);
 		vPrev = vHead;
 		for (vPrev = vHead; (v = vPrev.next) !== vHead; vPrev = v) {
-			assert(v.prev === vPrev);
+			assert$1(v.prev === vPrev);
 			e = v.anEdge;
 			do {
-				assert(e.Sym !== e);
-				assert(e.Sym.Sym === e);
-				assert(e.Lnext.Onext.Sym === e);
-				assert(e.Onext.Sym.Lnext === e);
-				assert(e.Org === v);
+				assert$1(e.Sym !== e);
+				assert$1(e.Sym.Sym === e);
+				assert$1(e.Lnext.Onext.Sym === e);
+				assert$1(e.Onext.Sym.Lnext === e);
+				assert$1(e.Org === v);
 				e = e.Onext;
 			} while (e !== v.anEdge);
 		}
-		assert(v.prev === vPrev && v.anEdge === null);
+		assert$1(v.prev === vPrev && v.anEdge === null);
 		ePrev = eHead;
 		for (ePrev = eHead; (e = ePrev.next) !== eHead; ePrev = e) {
-			assert(e.Sym.next === ePrev.Sym);
-			assert(e.Sym !== e);
-			assert(e.Sym.Sym === e);
-			assert(e.Org !== null);
-			assert(e.Dst !== null);
-			assert(e.Lnext.Onext.Sym === e);
-			assert(e.Onext.Sym.Lnext === e);
+			assert$1(e.Sym.next === ePrev.Sym);
+			assert$1(e.Sym !== e);
+			assert$1(e.Sym.Sym === e);
+			assert$1(e.Org !== null);
+			assert$1(e.Dst !== null);
+			assert$1(e.Lnext.Onext.Sym === e);
+			assert$1(e.Onext.Sym.Lnext === e);
 		}
-		assert(
+		assert$1(
 			e.Sym.next === ePrev.Sym &&
 				e.Sym === this.eHeadSym &&
 				e.Sym.Sym === e &&
@@ -503,1471 +471,1587 @@ TESSmesh.prototype = {
 		);
 	},
 };
-Geom.vertEq = function(u, v) {
-	return u.s === v.s && u.t === v.t;
-};
-Geom.vertLeq = function(u, v) {
-	return u.s < v.s || (u.s === v.s && u.t <= v.t);
-};
-Geom.transLeq = function(u, v) {
-	return u.t < v.t || (u.t === v.t && u.s <= v.s);
-};
-Geom.edgeGoesLeft = function(e) {
-	return Geom.vertLeq(e.Dst, e.Org);
-};
-Geom.edgeGoesRight = function(e) {
-	return Geom.vertLeq(e.Org, e.Dst);
-};
-Geom.vertL1dist = function(u, v) {
-	return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
-};
-Geom.edgeEval = function(u, v, w) {
-	assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
-	var gapL = v.s - u.s;
-	var gapR = w.s - v.s;
-	if (gapL + gapR > 0.0) {
-		if (gapL < gapR) {
-			return v.t - u.t + (u.t - w.t) * (gapL / (gapL + gapR));
-		} else {
-			return v.t - w.t + (w.t - u.t) * (gapR / (gapL + gapR));
-		}
+
+class Geom$1 {
+	static vertLeq(u, v) {
+		return u.s < v.s || (u.s === v.s && u.t <= v.t);
 	}
-	return 0.0;
-};
-Geom.edgeSign = function(u, v, w) {
-	assert(Geom.vertLeq(u, v) && Geom.vertLeq(v, w));
-	var gapL = v.s - u.s;
-	var gapR = w.s - v.s;
-	if (gapL + gapR > 0.0) {
-		return (v.t - w.t) * gapL + (v.t - u.t) * gapR;
+	static transLeq(u, v) {
+		return u.t < v.t || (u.t === v.t && u.s <= v.s);
 	}
-	return 0.0;
-};
-Geom.transEval = function(u, v, w) {
-	assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
-	var gapL = v.t - u.t;
-	var gapR = w.t - v.t;
-	if (gapL + gapR > 0.0) {
-		if (gapL < gapR) {
-			return v.s - u.s + (u.s - w.s) * (gapL / (gapL + gapR));
-		} else {
-			return v.s - w.s + (w.s - u.s) * (gapR / (gapL + gapR));
-		}
+	static edgeGoesLeft(e) {
+		return Geom$1.vertLeq(e.Dst, e.Org);
 	}
-	return 0.0;
-};
-Geom.transSign = function(u, v, w) {
-	assert(Geom.transLeq(u, v) && Geom.transLeq(v, w));
-	var gapL = v.t - u.t;
-	var gapR = w.t - v.t;
-	if (gapL + gapR > 0.0) {
-		return (v.s - w.s) * gapL + (v.s - u.s) * gapR;
+	static edgeGoesRight(e) {
+		return Geom$1.vertLeq(e.Org, e.Dst);
 	}
-	return 0.0;
-};
-Geom.vertCCW = function(u, v, w) {
-	return u.s * (v.t - w.t) + v.s * (w.t - u.t) + w.s * (u.t - v.t) >= 0.0;
-};
-Geom.interpolate = function(a, x, b, y) {
-	return (
-		(a = a < 0 ? 0 : a),
-		(b = b < 0 ? 0 : b),
-		a <= b
-			? b === 0
-				? (x + y) / 2
-				: x + (y - x) * (a / (a + b))
-			: y + (x - y) * (b / (a + b))
-	);
-};
-Geom.intersect = function(o1, d1, o2, d2, v) {
-	var z1, z2;
-	var t;
-	if (!Geom.vertLeq(o1, d1)) {
-		t = o1;
-		o1 = d1;
-		d1 = t;
+	static vertL1dist(u, v) {
+		return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
 	}
-	if (!Geom.vertLeq(o2, d2)) {
-		t = o2;
-		o2 = d2;
-		d2 = t;
-	}
-	if (!Geom.vertLeq(o1, o2)) {
-		t = o1;
-		o1 = o2;
-		o2 = t;
-		t = d1;
-		d1 = d2;
-		d2 = t;
-	}
-	if (!Geom.vertLeq(o2, d1)) {
-		v.s = (o2.s + d1.s) / 2;
-	} else if (Geom.vertLeq(d1, d2)) {
-		z1 = Geom.edgeEval(o1, o2, d1);
-		z2 = Geom.edgeEval(o2, d1, d2);
-		if (z1 + z2 < 0) {
-			z1 = -z1;
-			z2 = -z2;
-		}
-		v.s = Geom.interpolate(z1, o2.s, z2, d1.s);
-	} else {
-		z1 = Geom.edgeSign(o1, o2, d1);
-		z2 = -Geom.edgeSign(o1, d2, d1);
-		if (z1 + z2 < 0) {
-			z1 = -z1;
-			z2 = -z2;
-		}
-		v.s = Geom.interpolate(z1, o2.s, z2, d2.s);
-	}
-	if (!Geom.transLeq(o1, d1)) {
-		t = o1;
-		o1 = d1;
-		d1 = t;
-	}
-	if (!Geom.transLeq(o2, d2)) {
-		t = o2;
-		o2 = d2;
-		d2 = t;
-	}
-	if (!Geom.transLeq(o1, o2)) {
-		t = o1;
-		o1 = o2;
-		o2 = t;
-		t = d1;
-		d1 = d2;
-		d2 = t;
-	}
-	if (!Geom.transLeq(o2, d1)) {
-		v.t = (o2.t + d1.t) / 2;
-	} else if (Geom.transLeq(d1, d2)) {
-		z1 = Geom.transEval(o1, o2, d1);
-		z2 = Geom.transEval(o2, d1, d2);
-		if (z1 + z2 < 0) {
-			z1 = -z1;
-			z2 = -z2;
-		}
-		v.t = Geom.interpolate(z1, o2.t, z2, d1.t);
-	} else {
-		z1 = Geom.transSign(o1, o2, d1);
-		z2 = -Geom.transSign(o1, d2, d1);
-		if (z1 + z2 < 0) {
-			z1 = -z1;
-			z2 = -z2;
-		}
-		v.t = Geom.interpolate(z1, o2.t, z2, d2.t);
-	}
-};
-function DictNode() {
-	this.key = null;
-	this.next = null;
-	this.prev = null;
-}
-function Dict(frame, leq) {
-	this.head = new DictNode();
-	this.head.next = this.head;
-	this.head.prev = this.head;
-	this.frame = frame;
-	this.leq = leq;
-}
-Dict.prototype = {
-	min: function() {
-		return this.head.next;
-	},
-	max: function() {
-		return this.head.prev;
-	},
-	insert: function(k) {
-		return this.insertBefore(this.head, k);
-	},
-	search: function(key) {
-		var node = this.head;
-		do {
-			node = node.next;
-		} while (node.key !== null && !this.leq(this.frame, key, node.key));
-		return node;
-	},
-	insertBefore: function(node, key) {
-		do {
-			node = node.prev;
-		} while (node.key !== null && !this.leq(this.frame, node.key, key));
-		var newNode = new DictNode();
-		newNode.key = key;
-		newNode.next = node.next;
-		node.next.prev = newNode;
-		newNode.prev = node;
-		node.next = newNode;
-		return newNode;
-	},
-	delete: function(node) {
-		node.next.prev = node.prev;
-		node.prev.next = node.next;
-	},
-};
-function PQnode() {
-	this.handle = null;
-}
-function PQhandleElem() {
-	this.key = null;
-	this.node = null;
-}
-function PriorityQ(size, leq) {
-	this.size = 0;
-	this.max = size;
-	this.nodes = [];
-	this.nodes.length = size + 1;
-	var i;
-	for (i = 0; i < this.nodes.length; i++) this.nodes[i] = new PQnode();
-	this.handles = [];
-	this.handles.length = size + 1;
-	for (i = 0; i < this.handles.length; i++)
-		this.handles[i] = new PQhandleElem();
-	this.initialized = false;
-	this.freeList = 0;
-	this.leq = leq;
-	this.nodes[1].handle = 1;
-	this.handles[1].key = null;
-}
-PriorityQ.prototype = {
-	floatDown_: function(curr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var hCurr, hChild;
-		var child;
-		hCurr = n[curr].handle;
-		for (;;) {
-			child = curr << 1;
-			if (
-				child < this.size &&
-				this.leq(h[n[child + 1].handle].key, h[n[child].handle].key)
-			) {
-				++child;
-			}
-			assert(child <= this.max);
-			hChild = n[child].handle;
-			if (child > this.size || this.leq(h[hCurr].key, h[hChild].key)) {
-				n[curr].handle = hCurr;
-				h[hCurr].node = curr;
-				break;
-			}
-			n[curr].handle = hChild;
-			h[hChild].node = curr;
-			curr = child;
-		}
-	},
-	floatUp_: function(curr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var hCurr, hParent;
-		var parent;
-		hCurr = n[curr].handle;
-		for (;;) {
-			parent = curr >> 1;
-			hParent = n[parent].handle;
-			if (parent === 0 || this.leq(h[hParent].key, h[hCurr].key)) {
-				n[curr].handle = hCurr;
-				h[hCurr].node = curr;
-				break;
-			}
-			n[curr].handle = hParent;
-			h[hParent].node = curr;
-			curr = parent;
-		}
-	},
-	init: function() {
-		for (var i = this.size; i >= 1; --i) {
-			this.floatDown_(i);
-		}
-		this.initialized = true;
-	},
-	min: function() {
-		return this.handles[this.nodes[1].handle].key;
-	},
-	insert: function(keyNew) {
-		var curr;
-		var free;
-		curr = ++this.size;
-		if (curr * 2 > this.max) {
-			this.max *= 2;
-			var i;
-			var s;
-			s = this.nodes.length;
-			this.nodes.length = this.max + 1;
-			for (i = s; i < this.nodes.length; i++)
-				this.nodes[i] = new PQnode();
-			s = this.handles.length;
-			this.handles.length = this.max + 1;
-			for (i = s; i < this.handles.length; i++)
-				this.handles[i] = new PQhandleElem();
-		}
-		if (this.freeList === 0) {
-			free = curr;
-		} else {
-			free = this.freeList;
-			this.freeList = this.handles[free].node;
-		}
-		this.nodes[curr].handle = free;
-		this.handles[free].node = curr;
-		this.handles[free].key = keyNew;
-		if (this.initialized) {
-			this.floatUp_(curr);
-		}
-		return free;
-	},
-	extractMin: function() {
-		var n = this.nodes;
-		var h = this.handles;
-		var hMin = n[1].handle;
-		var min = h[hMin].key;
-		if (this.size > 0) {
-			n[1].handle = n[this.size].handle;
-			h[n[1].handle].node = 1;
-			h[hMin].key = null;
-			h[hMin].node = this.freeList;
-			this.freeList = hMin;
-			--this.size;
-			if (this.size > 0) {
-				this.floatDown_(1);
-			}
-		}
-		return min;
-	},
-	delete: function(hCurr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var curr;
-		assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key !== null);
-		curr = h[hCurr].node;
-		n[curr].handle = n[this.size].handle;
-		h[n[curr].handle].node = curr;
-		--this.size;
-		if (curr <= this.size) {
-			if (
-				curr <= 1 ||
-				this.leq(h[n[curr >> 1].handle].key, h[n[curr].handle].key)
-			) {
-				this.floatDown_(curr);
+	static edgeEval(u, v, w) {
+		assert(Geom$1.vertLeq(u, v) && Geom$1.vertLeq(v, w));
+		var gapL = v.s - u.s;
+		var gapR = w.s - v.s;
+		if (gapL + gapR > 0.0) {
+			if (gapL < gapR) {
+				return v.t - u.t + (u.t - w.t) * (gapL / (gapL + gapR));
 			} else {
-				this.floatUp_(curr);
+				return v.t - w.t + (w.t - u.t) * (gapR / (gapL + gapR));
 			}
 		}
-		h[hCurr].key = null;
-		h[hCurr].node = this.freeList;
-		this.freeList = hCurr;
-	},
-};
-function ActiveRegion() {
-	this.eUp = null;
-	this.nodeUp = null;
-	this.windingNumber = 0;
-	this.inside = false;
-	this.sentinel = false;
-	this.dirty = false;
-	this.fixUpperEdge = false;
+		return 0.0;
+	}
+	static edgeSign(u, v, w) {
+		assert(Geom$1.vertLeq(u, v) && Geom$1.vertLeq(v, w));
+		var gapL = v.s - u.s;
+		var gapR = w.s - v.s;
+		if (gapL + gapR > 0.0) {
+			return (v.t - w.t) * gapL + (v.t - u.t) * gapR;
+		}
+		return 0.0;
+	}
+	static transEval(u, v, w) {
+		assert(Geom$1.transLeq(u, v) && Geom$1.transLeq(v, w));
+		var gapL = v.t - u.t;
+		var gapR = w.t - v.t;
+		if (gapL + gapR > 0.0) {
+			if (gapL < gapR) {
+				return v.s - u.s + (u.s - w.s) * (gapL / (gapL + gapR));
+			} else {
+				return v.s - w.s + (w.s - u.s) * (gapR / (gapL + gapR));
+			}
+		}
+		return 0.0;
+	}
+	static transSign(u, v, w) {
+		assert(Geom$1.transLeq(u, v) && Geom$1.transLeq(v, w));
+		var gapL = v.t - u.t;
+		var gapR = w.t - v.t;
+		if (gapL + gapR > 0.0) {
+			return (v.s - w.s) * gapL + (v.s - u.s) * gapR;
+		}
+		return 0.0;
+	}
+	static vertCCW(u, v, w) {
+		return u.s * (v.t - w.t) + v.s * (w.t - u.t) + w.s * (u.t - v.t) >= 0.0;
+	}
+	static interpolate(a, x, b, y) {
+		return (
+			(a = a < 0 ? 0 : a),
+			(b = b < 0 ? 0 : b),
+			a <= b
+				? b === 0
+					? (x + y) / 2
+					: x + (y - x) * (a / (a + b))
+				: y + (x - y) * (b / (a + b))
+		);
+	}
+	static intersect(o1, d1, o2, d2, v) {
+		var z1, z2;
+		var t;
+		if (!Geom$1.vertLeq(o1, d1)) {
+			t = o1;
+			o1 = d1;
+			d1 = t;
+		}
+		if (!Geom$1.vertLeq(o2, d2)) {
+			t = o2;
+			o2 = d2;
+			d2 = t;
+		}
+		if (!Geom$1.vertLeq(o1, o2)) {
+			t = o1;
+			o1 = o2;
+			o2 = t;
+			t = d1;
+			d1 = d2;
+			d2 = t;
+		}
+		if (!Geom$1.vertLeq(o2, d1)) {
+			v.s = (o2.s + d1.s) / 2;
+		} else if (Geom$1.vertLeq(d1, d2)) {
+			z1 = Geom$1.edgeEval(o1, o2, d1);
+			z2 = Geom$1.edgeEval(o2, d1, d2);
+			if (z1 + z2 < 0) {
+				z1 = -z1;
+				z2 = -z2;
+			}
+			v.s = Geom$1.interpolate(z1, o2.s, z2, d1.s);
+		} else {
+			z1 = Geom$1.edgeSign(o1, o2, d1);
+			z2 = -Geom$1.edgeSign(o1, d2, d1);
+			if (z1 + z2 < 0) {
+				z1 = -z1;
+				z2 = -z2;
+			}
+			v.s = Geom$1.interpolate(z1, o2.s, z2, d2.s);
+		}
+		if (!Geom$1.transLeq(o1, d1)) {
+			t = o1;
+			o1 = d1;
+			d1 = t;
+		}
+		if (!Geom$1.transLeq(o2, d2)) {
+			t = o2;
+			o2 = d2;
+			d2 = t;
+		}
+		if (!Geom$1.transLeq(o1, o2)) {
+			t = o1;
+			o1 = o2;
+			o2 = t;
+			t = d1;
+			d1 = d2;
+			d2 = t;
+		}
+		if (!Geom$1.transLeq(o2, d1)) {
+			v.t = (o2.t + d1.t) / 2;
+		} else if (Geom$1.transLeq(d1, d2)) {
+			z1 = Geom$1.transEval(o1, o2, d1);
+			z2 = Geom$1.transEval(o2, d1, d2);
+			if (z1 + z2 < 0) {
+				z1 = -z1;
+				z2 = -z2;
+			}
+			v.t = Geom$1.interpolate(z1, o2.t, z2, d1.t);
+		} else {
+			z1 = Geom$1.transSign(o1, o2, d1);
+			z2 = -Geom$1.transSign(o1, d2, d1);
+			if (z1 + z2 < 0) {
+				z1 = -z1;
+				z2 = -z2;
+			}
+			v.t = Geom$1.interpolate(z1, o2.t, z2, d2.t);
+		}
+	}
 }
-var Sweep = {};
-Sweep.regionBelow = function(r) {
-	return r.nodeUp.prev.key;
-};
-Sweep.regionAbove = function(r) {
-	return r.nodeUp.next.key;
-};
-Sweep.debugEvent = function(tess) {
-};
-Sweep.addWinding = function(eDst, eSrc) {
-	eDst.winding += eSrc.winding;
-	eDst.Sym.winding += eSrc.Sym.winding;
-};
-Sweep.edgeLeq = function(tess, reg1, reg2) {
-	var ev = tess.event;
-	var t1, t2;
-	var e1 = reg1.eUp;
-	var e2 = reg2.eUp;
-	if (e1.Dst === ev) {
+
+class Sweep {
+	static regionBelow(r) {
+		return r.nodeUp.prev.key;
+	}
+	static regionAbove(r) {
+		return r.nodeUp.next.key;
+	}
+	static debugEvent(tess) {
+	}
+	static addWinding(eDst, eSrc) {
+		eDst.winding += eSrc.winding;
+		eDst.Sym.winding += eSrc.Sym.winding;
+	}
+	static edgeLeq(tess, reg1, reg2) {
+		var ev = tess.event;
+		var t1, t2;
+		var e1 = reg1.eUp;
+		var e2 = reg2.eUp;
+		if (e1.Dst === ev) {
+			if (e2.Dst === ev) {
+				if (Geom.vertLeq(e1.Org, e2.Org)) {
+					return Geom.edgeSign(e2.Dst, e1.Org, e2.Org) <= 0;
+				}
+				return Geom.edgeSign(e1.Dst, e2.Org, e1.Org) >= 0;
+			}
+			return Geom.edgeSign(e2.Dst, ev, e2.Org) <= 0;
+		}
 		if (e2.Dst === ev) {
-			if (Geom.vertLeq(e1.Org, e2.Org)) {
-				return Geom.edgeSign(e2.Dst, e1.Org, e2.Org) <= 0;
-			}
-			return Geom.edgeSign(e1.Dst, e2.Org, e1.Org) >= 0;
+			return Geom.edgeSign(e1.Dst, ev, e1.Org) >= 0;
 		}
-		return Geom.edgeSign(e2.Dst, ev, e2.Org) <= 0;
+		var t1 = Geom.edgeEval(e1.Dst, ev, e1.Org);
+		var t2 = Geom.edgeEval(e2.Dst, ev, e2.Org);
+		return t1 >= t2;
 	}
-	if (e2.Dst === ev) {
-		return Geom.edgeSign(e1.Dst, ev, e1.Org) >= 0;
+	static deleteRegion(tess, reg) {
+		if (reg.fixUpperEdge) {
+			assert(reg.eUp.winding === 0);
+		}
+		reg.eUp.activeRegion = null;
+		tess.dict.delete(reg.nodeUp);
 	}
-	var t1 = Geom.edgeEval(e1.Dst, ev, e1.Org);
-	var t2 = Geom.edgeEval(e2.Dst, ev, e2.Org);
-	return t1 >= t2;
-};
-Sweep.deleteRegion = function(tess, reg) {
-	if (reg.fixUpperEdge) {
-		assert(reg.eUp.winding === 0);
+	static fixUpperEdge(tess, reg, newEdge) {
+		assert(reg.fixUpperEdge);
+		tess.mesh.delete(reg.eUp);
+		reg.fixUpperEdge = false;
+		reg.eUp = newEdge;
+		newEdge.activeRegion = reg;
 	}
-	reg.eUp.activeRegion = null;
-	tess.dict.delete(reg.nodeUp);
-};
-Sweep.fixUpperEdge = function(tess, reg, newEdge) {
-	assert(reg.fixUpperEdge);
-	tess.mesh.delete(reg.eUp);
-	reg.fixUpperEdge = false;
-	reg.eUp = newEdge;
-	newEdge.activeRegion = reg;
-};
-Sweep.topLeftRegion = function(tess, reg) {
-	var org = reg.eUp.Org;
-	var e;
-	do {
-		reg = Sweep.regionAbove(reg);
-	} while (reg.eUp.Org === org);
-	if (reg.fixUpperEdge) {
-		e = tess.mesh.connect(Sweep.regionBelow(reg).eUp.Sym, reg.eUp.Lnext);
-		if (e === null) return null;
-		Sweep.fixUpperEdge(tess, reg, e);
-		reg = Sweep.regionAbove(reg);
-	}
-	return reg;
-};
-Sweep.topRightRegion = function(reg) {
-	var dst = reg.eUp.Dst;
-	do {
-		reg = Sweep.regionAbove(reg);
-	} while (reg.eUp.Dst === dst);
-	return reg;
-};
-Sweep.addRegionBelow = function(tess, regAbove, eNewUp) {
-	var regNew = new ActiveRegion();
-	regNew.eUp = eNewUp;
-	regNew.nodeUp = tess.dict.insertBefore(regAbove.nodeUp, regNew);
-	regNew.fixUpperEdge = false;
-	regNew.sentinel = false;
-	regNew.dirty = false;
-	eNewUp.activeRegion = regNew;
-	return regNew;
-};
-Sweep.isWindingInside = function(tess, n) {
-	switch (tess.windingRule) {
-		case Tess2.WINDING_ODD:
-			return (n & 1) !== 0;
-		case Tess2.WINDING_NONZERO:
-			return n !== 0;
-		case Tess2.WINDING_POSITIVE:
-			return n > 0;
-		case Tess2.WINDING_NEGATIVE:
-			return n < 0;
-		case Tess2.WINDING_ABS_GEQ_TWO:
-			return n >= 2 || n <= -2;
-	}
-	assert(false);
-	return false;
-};
-Sweep.computeWinding = function(tess, reg) {
-	reg.windingNumber = Sweep.regionAbove(reg).windingNumber + reg.eUp.winding;
-	reg.inside = Sweep.isWindingInside(tess, reg.windingNumber);
-};
-Sweep.finishRegion = function(tess, reg) {
-	var e = reg.eUp;
-	var f = e.Lface;
-	f.inside = reg.inside;
-	f.anEdge = e;
-	Sweep.deleteRegion(tess, reg);
-};
-Sweep.finishLeftRegions = function(tess, regFirst, regLast) {
-	var e, ePrev;
-	var reg = null;
-	var regPrev = regFirst;
-	var ePrev = regFirst.eUp;
-	while (regPrev !== regLast) {
-		regPrev.fixUpperEdge = false;
-		reg = Sweep.regionBelow(regPrev);
-		e = reg.eUp;
-		if (e.Org != ePrev.Org) {
-			if (!reg.fixUpperEdge) {
-				Sweep.finishRegion(tess, regPrev);
-				break;
-			}
-			e = tess.mesh.connect(ePrev.Lprev, e.Sym);
+	static topLeftRegion(tess, reg) {
+		var org = reg.eUp.Org;
+		var e;
+		do {
+			reg = Sweep.regionAbove(reg);
+		} while (reg.eUp.Org === org);
+		if (reg.fixUpperEdge) {
+			e = tess.mesh.connect(
+				Sweep.regionBelow(reg).eUp.Sym,
+				reg.eUp.Lnext,
+			);
+			if (e === null) return null;
 			Sweep.fixUpperEdge(tess, reg, e);
+			reg = Sweep.regionAbove(reg);
 		}
-		if (ePrev.Onext !== e) {
-			tess.mesh.splice(e.Oprev, e);
-			tess.mesh.splice(ePrev, e);
+		return reg;
+	}
+	static topRightRegion(reg) {
+		var dst = reg.eUp.Dst;
+		do {
+			reg = Sweep.regionAbove(reg);
+		} while (reg.eUp.Dst === dst);
+		return reg;
+	}
+	static addRegionBelow(tess, regAbove, eNewUp) {
+		var regNew = new ActiveRegion();
+		regNew.eUp = eNewUp;
+		regNew.nodeUp = tess.dict.insertBefore(regAbove.nodeUp, regNew);
+		regNew.fixUpperEdge = false;
+		regNew.sentinel = false;
+		regNew.dirty = false;
+		eNewUp.activeRegion = regNew;
+		return regNew;
+	}
+	static isWindingInside(tess, n) {
+		switch (tess.windingRule) {
+			case Tess2.WINDING_ODD:
+				return (n & 1) !== 0;
+			case Tess2.WINDING_NONZERO:
+				return n !== 0;
+			case Tess2.WINDING_POSITIVE:
+				return n > 0;
+			case Tess2.WINDING_NEGATIVE:
+				return n < 0;
+			case Tess2.WINDING_ABS_GEQ_TWO:
+				return n >= 2 || n <= -2;
 		}
-		Sweep.finishRegion(tess, regPrev);
-		ePrev = reg.eUp;
-		regPrev = reg;
-	}
-	return ePrev;
-};
-Sweep.addRightEdges = function(tess, regUp, eFirst, eLast, eTopLeft, cleanUp) {
-	var reg, regPrev;
-	var e, ePrev;
-	var firstTime = true;
-	e = eFirst;
-	do {
-		assert(Geom.vertLeq(e.Org, e.Dst));
-		Sweep.addRegionBelow(tess, regUp, e.Sym);
-		e = e.Onext;
-	} while (e !== eLast);
-	if (eTopLeft === null) {
-		eTopLeft = Sweep.regionBelow(regUp).eUp.Rprev;
-	}
-	regPrev = regUp;
-	ePrev = eTopLeft;
-	for (;;) {
-		reg = Sweep.regionBelow(regPrev);
-		e = reg.eUp.Sym;
-		if (e.Org !== ePrev.Org) break;
-		if (e.Onext !== ePrev) {
-			tess.mesh.splice(e.Oprev, e);
-			tess.mesh.splice(ePrev.Oprev, e);
-		}
-		reg.windingNumber = regPrev.windingNumber - e.winding;
-		reg.inside = Sweep.isWindingInside(tess, reg.windingNumber);
-		regPrev.dirty = true;
-		if (!firstTime && Sweep.checkForRightSplice(tess, regPrev)) {
-			Sweep.addWinding(e, ePrev);
-			Sweep.deleteRegion(tess, regPrev);
-			tess.mesh.delete(ePrev);
-		}
-		firstTime = false;
-		regPrev = reg;
-		ePrev = e;
-	}
-	regPrev.dirty = true;
-	assert(regPrev.windingNumber - e.winding === reg.windingNumber);
-	if (cleanUp) {
-		Sweep.walkDirtyRegions(tess, regPrev);
-	}
-};
-Sweep.spliceMergeVertices = function(tess, e1, e2) {
-	tess.mesh.splice(e1, e2);
-};
-Sweep.vertexWeights = function(isect, org, dst) {
-	var t1 = Geom.vertL1dist(org, isect);
-	var t2 = Geom.vertL1dist(dst, isect);
-	var w0 = (0.5 * t2) / (t1 + t2);
-	var w1 = (0.5 * t1) / (t1 + t2);
-	isect.coords[0] += w0 * org.coords[0] + w1 * dst.coords[0];
-	isect.coords[1] += w0 * org.coords[1] + w1 * dst.coords[1];
-	isect.coords[2] += w0 * org.coords[2] + w1 * dst.coords[2];
-};
-Sweep.getIntersectData = function(tess, isect, orgUp, dstUp, orgLo, dstLo) {
-	isect.coords[0] = isect.coords[1] = isect.coords[2] = 0;
-	isect.idx = -1;
-	Sweep.vertexWeights(isect, orgUp, dstUp);
-	Sweep.vertexWeights(isect, orgLo, dstLo);
-};
-Sweep.checkForRightSplice = function(tess, regUp) {
-	var regLo = Sweep.regionBelow(regUp);
-	var eUp = regUp.eUp;
-	var eLo = regLo.eUp;
-	if (Geom.vertLeq(eUp.Org, eLo.Org)) {
-		if (Geom.edgeSign(eLo.Dst, eUp.Org, eLo.Org) > 0) return false;
-		if (!Geom.vertEq(eUp.Org, eLo.Org)) {
-			tess.mesh.splitEdge(eLo.Sym);
-			tess.mesh.splice(eUp, eLo.Oprev);
-			regUp.dirty = regLo.dirty = true;
-		} else if (eUp.Org !== eLo.Org) {
-			tess.pq.delete(eUp.Org.pqHandle);
-			Sweep.spliceMergeVertices(tess, eLo.Oprev, eUp);
-		}
-	} else {
-		if (Geom.edgeSign(eUp.Dst, eLo.Org, eUp.Org) < 0) return false;
-		Sweep.regionAbove(regUp).dirty = regUp.dirty = true;
-		tess.mesh.splitEdge(eUp.Sym);
-		tess.mesh.splice(eLo.Oprev, eUp);
-	}
-	return true;
-};
-Sweep.checkForLeftSplice = function(tess, regUp) {
-	var regLo = Sweep.regionBelow(regUp);
-	var eUp = regUp.eUp;
-	var eLo = regLo.eUp;
-	var e;
-	assert(!Geom.vertEq(eUp.Dst, eLo.Dst));
-	if (Geom.vertLeq(eUp.Dst, eLo.Dst)) {
-		if (Geom.edgeSign(eUp.Dst, eLo.Dst, eUp.Org) < 0) return false;
-		Sweep.regionAbove(regUp).dirty = regUp.dirty = true;
-		e = tess.mesh.splitEdge(eUp);
-		tess.mesh.splice(eLo.Sym, e);
-		e.Lface.inside = regUp.inside;
-	} else {
-		if (Geom.edgeSign(eLo.Dst, eUp.Dst, eLo.Org) > 0) return false;
-		regUp.dirty = regLo.dirty = true;
-		e = tess.mesh.splitEdge(eLo);
-		tess.mesh.splice(eUp.Lnext, eLo.Sym);
-		e.Rface.inside = regUp.inside;
-	}
-	return true;
-};
-Sweep.checkForIntersect = function(tess, regUp) {
-	var regLo = Sweep.regionBelow(regUp);
-	var eUp = regUp.eUp;
-	var eLo = regLo.eUp;
-	var orgUp = eUp.Org;
-	var orgLo = eLo.Org;
-	var dstUp = eUp.Dst;
-	var dstLo = eLo.Dst;
-	var tMinUp, tMaxLo;
-	var isect = new TESSvertex(),
-		orgMin;
-	var e;
-	assert(!Geom.vertEq(dstLo, dstUp));
-	assert(Geom.edgeSign(dstUp, tess.event, orgUp) <= 0);
-	assert(Geom.edgeSign(dstLo, tess.event, orgLo) >= 0);
-	assert(orgUp !== tess.event && orgLo !== tess.event);
-	assert(!regUp.fixUpperEdge && !regLo.fixUpperEdge);
-	if (orgUp === orgLo) return false;
-	tMinUp = Math.min(orgUp.t, dstUp.t);
-	tMaxLo = Math.max(orgLo.t, dstLo.t);
-	if (tMinUp > tMaxLo) return false;
-	if (Geom.vertLeq(orgUp, orgLo)) {
-		if (Geom.edgeSign(dstLo, orgUp, orgLo) > 0) return false;
-	} else {
-		if (Geom.edgeSign(dstUp, orgLo, orgUp) < 0) return false;
-	}
-	Sweep.debugEvent(tess);
-	Geom.intersect(dstUp, orgUp, dstLo, orgLo, isect);
-	assert(Math.min(orgUp.t, dstUp.t) <= isect.t);
-	assert(isect.t <= Math.max(orgLo.t, dstLo.t));
-	assert(Math.min(dstLo.s, dstUp.s) <= isect.s);
-	assert(isect.s <= Math.max(orgLo.s, orgUp.s));
-	if (Geom.vertLeq(isect, tess.event)) {
-		isect.s = tess.event.s;
-		isect.t = tess.event.t;
-	}
-	orgMin = Geom.vertLeq(orgUp, orgLo) ? orgUp : orgLo;
-	if (Geom.vertLeq(orgMin, isect)) {
-		isect.s = orgMin.s;
-		isect.t = orgMin.t;
-	}
-	if (Geom.vertEq(isect, orgUp) || Geom.vertEq(isect, orgLo)) {
-		Sweep.checkForRightSplice(tess, regUp);
+		assert(false);
 		return false;
 	}
-	if (
-		(!Geom.vertEq(dstUp, tess.event) &&
-			Geom.edgeSign(dstUp, tess.event, isect) >= 0) ||
-		(!Geom.vertEq(dstLo, tess.event) &&
-			Geom.edgeSign(dstLo, tess.event, isect) <= 0)
-	) {
-		if (dstLo === tess.event) {
-			tess.mesh.splitEdge(eUp.Sym);
-			tess.mesh.splice(eLo.Sym, eUp);
-			regUp = Sweep.topLeftRegion(tess, regUp);
-			eUp = Sweep.regionBelow(regUp).eUp;
-			Sweep.finishLeftRegions(tess, Sweep.regionBelow(regUp), regLo);
-			Sweep.addRightEdges(tess, regUp, eUp.Oprev, eUp, eUp, true);
-			return true;
+	static computeWinding(tess, reg) {
+		reg.windingNumber =
+			Sweep.regionAbove(reg).windingNumber + reg.eUp.winding;
+		reg.inside = Sweep.isWindingInside(tess, reg.windingNumber);
+	}
+	static finishRegion(tess, reg) {
+		var e = reg.eUp;
+		var f = e.Lface;
+		f.inside = reg.inside;
+		f.anEdge = e;
+		Sweep.deleteRegion(tess, reg);
+	}
+	static finishLeftRegions(tess, regFirst, regLast) {
+		var e, ePrev;
+		var reg = null;
+		var regPrev = regFirst;
+		var ePrev = regFirst.eUp;
+		while (regPrev !== regLast) {
+			regPrev.fixUpperEdge = false;
+			reg = Sweep.regionBelow(regPrev);
+			e = reg.eUp;
+			if (e.Org != ePrev.Org) {
+				if (!reg.fixUpperEdge) {
+					Sweep.finishRegion(tess, regPrev);
+					break;
+				}
+				e = tess.mesh.connect(ePrev.Lprev, e.Sym);
+				Sweep.fixUpperEdge(tess, reg, e);
+			}
+			if (ePrev.Onext !== e) {
+				tess.mesh.splice(e.Oprev, e);
+				tess.mesh.splice(ePrev, e);
+			}
+			Sweep.finishRegion(tess, regPrev);
+			ePrev = reg.eUp;
+			regPrev = reg;
 		}
-		if (dstUp === tess.event) {
-			tess.mesh.splitEdge(eLo.Sym);
-			tess.mesh.splice(eUp.Lnext, eLo.Oprev);
-			regLo = regUp;
-			regUp = Sweep.topRightRegion(regUp);
-			e = Sweep.regionBelow(regUp).eUp.Rprev;
-			regLo.eUp = eLo.Oprev;
-			eLo = Sweep.finishLeftRegions(tess, regLo, null);
-			Sweep.addRightEdges(tess, regUp, eLo.Onext, eUp.Rprev, e, true);
-			return true;
+		return ePrev;
+	}
+	static addRightEdges(tess, regUp, eFirst, eLast, eTopLeft, cleanUp) {
+		var reg, regPrev;
+		var e, ePrev;
+		var firstTime = true;
+		e = eFirst;
+		do {
+			assert(Geom.vertLeq(e.Org, e.Dst));
+			Sweep.addRegionBelow(tess, regUp, e.Sym);
+			e = e.Onext;
+		} while (e !== eLast);
+		if (eTopLeft === null) {
+			eTopLeft = Sweep.regionBelow(regUp).eUp.Rprev;
 		}
-		if (Geom.edgeSign(dstUp, tess.event, isect) >= 0) {
+		regPrev = regUp;
+		ePrev = eTopLeft;
+		for (;;) {
+			reg = Sweep.regionBelow(regPrev);
+			e = reg.eUp.Sym;
+			if (e.Org !== ePrev.Org) break;
+			if (e.Onext !== ePrev) {
+				tess.mesh.splice(e.Oprev, e);
+				tess.mesh.splice(ePrev.Oprev, e);
+			}
+			reg.windingNumber = regPrev.windingNumber - e.winding;
+			reg.inside = Sweep.isWindingInside(tess, reg.windingNumber);
+			regPrev.dirty = true;
+			if (!firstTime && Sweep.checkForRightSplice(tess, regPrev)) {
+				Sweep.addWinding(e, ePrev);
+				Sweep.deleteRegion(tess, regPrev);
+				tess.mesh.delete(ePrev);
+			}
+			firstTime = false;
+			regPrev = reg;
+			ePrev = e;
+		}
+		regPrev.dirty = true;
+		assert(regPrev.windingNumber - e.winding === reg.windingNumber);
+		if (cleanUp) {
+			Sweep.walkDirtyRegions(tess, regPrev);
+		}
+	}
+	static spliceMergeVertices(tess, e1, e2) {
+		tess.mesh.splice(e1, e2);
+	}
+	static vertexWeights(isect, org, dst) {
+		var t1 = Geom.vertL1dist(org, isect);
+		var t2 = Geom.vertL1dist(dst, isect);
+		var w0 = (0.5 * t2) / (t1 + t2);
+		var w1 = (0.5 * t1) / (t1 + t2);
+		isect.coords[0] += w0 * org.coords[0] + w1 * dst.coords[0];
+		isect.coords[1] += w0 * org.coords[1] + w1 * dst.coords[1];
+		isect.coords[2] += w0 * org.coords[2] + w1 * dst.coords[2];
+	}
+	static getIntersectData(tess, isect, orgUp, dstUp, orgLo, dstLo) {
+		isect.coords[0] = isect.coords[1] = isect.coords[2] = 0;
+		isect.idx = -1;
+		Sweep.vertexWeights(isect, orgUp, dstUp);
+		Sweep.vertexWeights(isect, orgLo, dstLo);
+	}
+	static checkForRightSplice(tess, regUp) {
+		var regLo = Sweep.regionBelow(regUp);
+		var eUp = regUp.eUp;
+		var eLo = regLo.eUp;
+		if (Geom.vertLeq(eUp.Org, eLo.Org)) {
+			if (Geom.edgeSign(eLo.Dst, eUp.Org, eLo.Org) > 0) return false;
+			if (!Geom.vertEq(eUp.Org, eLo.Org)) {
+				tess.mesh.splitEdge(eLo.Sym);
+				tess.mesh.splice(eUp, eLo.Oprev);
+				regUp.dirty = regLo.dirty = true;
+			} else if (eUp.Org !== eLo.Org) {
+				tess.pq.delete(eUp.Org.pqHandle);
+				Sweep.spliceMergeVertices(tess, eLo.Oprev, eUp);
+			}
+		} else {
+			if (Geom.edgeSign(eUp.Dst, eLo.Org, eUp.Org) < 0) return false;
 			Sweep.regionAbove(regUp).dirty = regUp.dirty = true;
 			tess.mesh.splitEdge(eUp.Sym);
-			eUp.Org.s = tess.event.s;
-			eUp.Org.t = tess.event.t;
+			tess.mesh.splice(eLo.Oprev, eUp);
 		}
-		if (Geom.edgeSign(dstLo, tess.event, isect) <= 0) {
+		return true;
+	}
+	static checkForLeftSplice(tess, regUp) {
+		var regLo = Sweep.regionBelow(regUp);
+		var eUp = regUp.eUp;
+		var eLo = regLo.eUp;
+		var e;
+		assert(!Geom.vertEq(eUp.Dst, eLo.Dst));
+		if (Geom.vertLeq(eUp.Dst, eLo.Dst)) {
+			if (Geom.edgeSign(eUp.Dst, eLo.Dst, eUp.Org) < 0) return false;
+			Sweep.regionAbove(regUp).dirty = regUp.dirty = true;
+			e = tess.mesh.splitEdge(eUp);
+			tess.mesh.splice(eLo.Sym, e);
+			e.Lface.inside = regUp.inside;
+		} else {
+			if (Geom.edgeSign(eLo.Dst, eUp.Dst, eLo.Org) > 0) return false;
 			regUp.dirty = regLo.dirty = true;
-			tess.mesh.splitEdge(eLo.Sym);
-			eLo.Org.s = tess.event.s;
-			eLo.Org.t = tess.event.t;
+			e = tess.mesh.splitEdge(eLo);
+			tess.mesh.splice(eUp.Lnext, eLo.Sym);
+			e.Rface.inside = regUp.inside;
 		}
+		return true;
+	}
+	static checkForIntersect(tess, regUp) {
+		var regLo = Sweep.regionBelow(regUp);
+		var eUp = regUp.eUp;
+		var eLo = regLo.eUp;
+		var orgUp = eUp.Org;
+		var orgLo = eLo.Org;
+		var dstUp = eUp.Dst;
+		var dstLo = eLo.Dst;
+		var tMinUp, tMaxLo;
+		var isect = new TESSvertex(),
+			orgMin;
+		var e;
+		assert(!Geom.vertEq(dstLo, dstUp));
+		assert(Geom.edgeSign(dstUp, tess.event, orgUp) <= 0);
+		assert(Geom.edgeSign(dstLo, tess.event, orgLo) >= 0);
+		assert(orgUp !== tess.event && orgLo !== tess.event);
+		assert(!regUp.fixUpperEdge && !regLo.fixUpperEdge);
+		if (orgUp === orgLo) return false;
+		tMinUp = Math.min(orgUp.t, dstUp.t);
+		tMaxLo = Math.max(orgLo.t, dstLo.t);
+		if (tMinUp > tMaxLo) return false;
+		if (Geom.vertLeq(orgUp, orgLo)) {
+			if (Geom.edgeSign(dstLo, orgUp, orgLo) > 0) return false;
+		} else {
+			if (Geom.edgeSign(dstUp, orgLo, orgUp) < 0) return false;
+		}
+		Sweep.debugEvent(tess);
+		Geom.intersect(dstUp, orgUp, dstLo, orgLo, isect);
+		assert(Math.min(orgUp.t, dstUp.t) <= isect.t);
+		assert(isect.t <= Math.max(orgLo.t, dstLo.t));
+		assert(Math.min(dstLo.s, dstUp.s) <= isect.s);
+		assert(isect.s <= Math.max(orgLo.s, orgUp.s));
+		if (Geom.vertLeq(isect, tess.event)) {
+			isect.s = tess.event.s;
+			isect.t = tess.event.t;
+		}
+		orgMin = Geom.vertLeq(orgUp, orgLo) ? orgUp : orgLo;
+		if (Geom.vertLeq(orgMin, isect)) {
+			isect.s = orgMin.s;
+			isect.t = orgMin.t;
+		}
+		if (Geom.vertEq(isect, orgUp) || Geom.vertEq(isect, orgLo)) {
+			Sweep.checkForRightSplice(tess, regUp);
+			return false;
+		}
+		if (
+			(!Geom.vertEq(dstUp, tess.event) &&
+				Geom.edgeSign(dstUp, tess.event, isect) >= 0) ||
+			(!Geom.vertEq(dstLo, tess.event) &&
+				Geom.edgeSign(dstLo, tess.event, isect) <= 0)
+		) {
+			if (dstLo === tess.event) {
+				tess.mesh.splitEdge(eUp.Sym);
+				tess.mesh.splice(eLo.Sym, eUp);
+				regUp = Sweep.topLeftRegion(tess, regUp);
+				eUp = Sweep.regionBelow(regUp).eUp;
+				Sweep.finishLeftRegions(tess, Sweep.regionBelow(regUp), regLo);
+				Sweep.addRightEdges(tess, regUp, eUp.Oprev, eUp, eUp, true);
+				return true;
+			}
+			if (dstUp === tess.event) {
+				tess.mesh.splitEdge(eLo.Sym);
+				tess.mesh.splice(eUp.Lnext, eLo.Oprev);
+				regLo = regUp;
+				regUp = Sweep.topRightRegion(regUp);
+				e = Sweep.regionBelow(regUp).eUp.Rprev;
+				regLo.eUp = eLo.Oprev;
+				eLo = Sweep.finishLeftRegions(tess, regLo, null);
+				Sweep.addRightEdges(tess, regUp, eLo.Onext, eUp.Rprev, e, true);
+				return true;
+			}
+			if (Geom.edgeSign(dstUp, tess.event, isect) >= 0) {
+				Sweep.regionAbove(regUp).dirty = regUp.dirty = true;
+				tess.mesh.splitEdge(eUp.Sym);
+				eUp.Org.s = tess.event.s;
+				eUp.Org.t = tess.event.t;
+			}
+			if (Geom.edgeSign(dstLo, tess.event, isect) <= 0) {
+				regUp.dirty = regLo.dirty = true;
+				tess.mesh.splitEdge(eLo.Sym);
+				eLo.Org.s = tess.event.s;
+				eLo.Org.t = tess.event.t;
+			}
+			return false;
+		}
+		tess.mesh.splitEdge(eUp.Sym);
+		tess.mesh.splitEdge(eLo.Sym);
+		tess.mesh.splice(eLo.Oprev, eUp);
+		eUp.Org.s = isect.s;
+		eUp.Org.t = isect.t;
+		eUp.Org.pqHandle = tess.pq.insert(eUp.Org);
+		Sweep.getIntersectData(tess, eUp.Org, orgUp, dstUp, orgLo, dstLo);
+		Sweep.regionAbove(regUp).dirty = regUp.dirty = regLo.dirty = true;
 		return false;
 	}
-	tess.mesh.splitEdge(eUp.Sym);
-	tess.mesh.splitEdge(eLo.Sym);
-	tess.mesh.splice(eLo.Oprev, eUp);
-	eUp.Org.s = isect.s;
-	eUp.Org.t = isect.t;
-	eUp.Org.pqHandle = tess.pq.insert(eUp.Org);
-	Sweep.getIntersectData(tess, eUp.Org, orgUp, dstUp, orgLo, dstLo);
-	Sweep.regionAbove(regUp).dirty = regUp.dirty = regLo.dirty = true;
-	return false;
-};
-Sweep.walkDirtyRegions = function(tess, regUp) {
-	var regLo = Sweep.regionBelow(regUp);
-	var eUp, eLo;
-	for (;;) {
-		while (regLo.dirty) {
-			regUp = regLo;
-			regLo = Sweep.regionBelow(regLo);
+	static walkDirtyRegions(tess, regUp) {
+		var regLo = Sweep.regionBelow(regUp);
+		var eUp, eLo;
+		for (;;) {
+			while (regLo.dirty) {
+				regUp = regLo;
+				regLo = Sweep.regionBelow(regLo);
+			}
+			if (!regUp.dirty) {
+				regLo = regUp;
+				regUp = Sweep.regionAbove(regUp);
+				if (regUp === null || !regUp.dirty) {
+					return;
+				}
+			}
+			regUp.dirty = false;
+			eUp = regUp.eUp;
+			eLo = regLo.eUp;
+			if (eUp.Dst !== eLo.Dst) {
+				if (Sweep.checkForLeftSplice(tess, regUp)) {
+					if (regLo.fixUpperEdge) {
+						Sweep.deleteRegion(tess, regLo);
+						tess.mesh.delete(eLo);
+						regLo = Sweep.regionBelow(regUp);
+						eLo = regLo.eUp;
+					} else if (regUp.fixUpperEdge) {
+						Sweep.deleteRegion(tess, regUp);
+						tess.mesh.delete(eUp);
+						regUp = Sweep.regionAbove(regLo);
+						eUp = regUp.eUp;
+					}
+				}
+			}
+			if (eUp.Org !== eLo.Org) {
+				if (
+					eUp.Dst !== eLo.Dst &&
+					!regUp.fixUpperEdge &&
+					!regLo.fixUpperEdge &&
+					(eUp.Dst === tess.event || eLo.Dst === tess.event)
+				) {
+					if (Sweep.checkForIntersect(tess, regUp)) {
+						return;
+					}
+				} else {
+					Sweep.checkForRightSplice(tess, regUp);
+				}
+			}
+			if (eUp.Org === eLo.Org && eUp.Dst === eLo.Dst) {
+				Sweep.addWinding(eLo, eUp);
+				Sweep.deleteRegion(tess, regUp);
+				tess.mesh.delete(eUp);
+				regUp = Sweep.regionAbove(regLo);
+			}
 		}
-		if (!regUp.dirty) {
-			regLo = regUp;
-			regUp = Sweep.regionAbove(regUp);
-			if (regUp === null || !regUp.dirty) {
+	}
+	static connectRightVertex(tess, regUp, eBottomLeft) {
+		var eNew;
+		var eTopLeft = eBottomLeft.Onext;
+		var regLo = Sweep.regionBelow(regUp);
+		var eUp = regUp.eUp;
+		var eLo = regLo.eUp;
+		var degenerate = false;
+		if (eUp.Dst !== eLo.Dst) {
+			Sweep.checkForIntersect(tess, regUp);
+		}
+		if (Geom.vertEq(eUp.Org, tess.event)) {
+			tess.mesh.splice(eTopLeft.Oprev, eUp);
+			regUp = Sweep.topLeftRegion(tess, regUp);
+			eTopLeft = Sweep.regionBelow(regUp).eUp;
+			Sweep.finishLeftRegions(tess, Sweep.regionBelow(regUp), regLo);
+			degenerate = true;
+		}
+		if (Geom.vertEq(eLo.Org, tess.event)) {
+			tess.mesh.splice(eBottomLeft, eLo.Oprev);
+			eBottomLeft = Sweep.finishLeftRegions(tess, regLo, null);
+			degenerate = true;
+		}
+		if (degenerate) {
+			Sweep.addRightEdges(
+				tess,
+				regUp,
+				eBottomLeft.Onext,
+				eTopLeft,
+				eTopLeft,
+				true,
+			);
+			return;
+		}
+		if (Geom.vertLeq(eLo.Org, eUp.Org)) {
+			eNew = eLo.Oprev;
+		} else {
+			eNew = eUp;
+		}
+		eNew = tess.mesh.connect(eBottomLeft.Lprev, eNew);
+		Sweep.addRightEdges(tess, regUp, eNew, eNew.Onext, eNew.Onext, false);
+		eNew.Sym.activeRegion.fixUpperEdge = true;
+		Sweep.walkDirtyRegions(tess, regUp);
+	}
+	static connectLeftDegenerate(tess, regUp, vEvent) {
+		var e, eTopLeft, eTopRight, eLast;
+		var reg;
+		e = regUp.eUp;
+		if (Geom.vertEq(e.Org, vEvent)) {
+			assert(false );
+			Sweep.spliceMergeVertices(tess, e, vEvent.anEdge);
+			return;
+		}
+		if (!Geom.vertEq(e.Dst, vEvent)) {
+			tess.mesh.splitEdge(e.Sym);
+			if (regUp.fixUpperEdge) {
+				tess.mesh.delete(e.Onext);
+				regUp.fixUpperEdge = false;
+			}
+			tess.mesh.splice(vEvent.anEdge, e);
+			Sweep.sweepEvent(tess, vEvent);
+			return;
+		}
+		assert(false );
+		regUp = Sweep.topRightRegion(regUp);
+		reg = Sweep.regionBelow(regUp);
+		eTopRight = reg.eUp.Sym;
+		eTopLeft = eLast = eTopRight.Onext;
+		if (reg.fixUpperEdge) {
+			assert(eTopLeft !== eTopRight);
+			Sweep.deleteRegion(tess, reg);
+			tess.mesh.delete(eTopRight);
+			eTopRight = eTopLeft.Oprev;
+		}
+		tess.mesh.splice(vEvent.anEdge, eTopRight);
+		if (!Geom.edgeGoesLeft(eTopLeft)) {
+			eTopLeft = null;
+		}
+		Sweep.addRightEdges(
+			tess,
+			regUp,
+			eTopRight.Onext,
+			eLast,
+			eTopLeft,
+			true,
+		);
+	}
+	static connectLeftVertex(tess, vEvent) {
+		var regUp, regLo, reg;
+		var eUp, eLo, eNew;
+		var tmp = new ActiveRegion();
+		tmp.eUp = vEvent.anEdge.Sym;
+		 regUp = tess.dict.search(tmp).key;
+		regLo = Sweep.regionBelow(regUp);
+		if (!regLo) {
+			return;
+		}
+		eUp = regUp.eUp;
+		eLo = regLo.eUp;
+		if (Geom.edgeSign(eUp.Dst, vEvent, eUp.Org) === 0.0) {
+			Sweep.connectLeftDegenerate(tess, regUp, vEvent);
+			return;
+		}
+		reg = Geom.vertLeq(eLo.Dst, eUp.Dst) ? regUp : regLo;
+		if (regUp.inside || reg.fixUpperEdge) {
+			if (reg === regUp) {
+				eNew = tess.mesh.connect(vEvent.anEdge.Sym, eUp.Lnext);
+			} else {
+				var tempHalfEdge = tess.mesh.connect(eLo.Dnext, vEvent.anEdge);
+				eNew = tempHalfEdge.Sym;
+			}
+			if (reg.fixUpperEdge) {
+				Sweep.fixUpperEdge(tess, reg, eNew);
+			} else {
+				Sweep.computeWinding(
+					tess,
+					Sweep.addRegionBelow(tess, regUp, eNew),
+				);
+			}
+			Sweep.sweepEvent(tess, vEvent);
+		} else {
+			Sweep.addRightEdges(
+				tess,
+				regUp,
+				vEvent.anEdge,
+				vEvent.anEdge,
+				null,
+				true,
+			);
+		}
+	}
+	static sweepEvent(tess, vEvent) {
+		tess.event = vEvent;
+		Sweep.debugEvent(tess);
+		var e = vEvent.anEdge;
+		while (e.activeRegion === null) {
+			e = e.Onext;
+			if (e === vEvent.anEdge) {
+				Sweep.connectLeftVertex(tess, vEvent);
 				return;
 			}
 		}
-		regUp.dirty = false;
-		eUp = regUp.eUp;
-		eLo = regLo.eUp;
-		if (eUp.Dst !== eLo.Dst) {
-			if (Sweep.checkForLeftSplice(tess, regUp)) {
-				if (regLo.fixUpperEdge) {
-					Sweep.deleteRegion(tess, regLo);
-					tess.mesh.delete(eLo);
-					regLo = Sweep.regionBelow(regUp);
-					eLo = regLo.eUp;
-				} else if (regUp.fixUpperEdge) {
-					Sweep.deleteRegion(tess, regUp);
-					tess.mesh.delete(eUp);
-					regUp = Sweep.regionAbove(regLo);
-					eUp = regUp.eUp;
-				}
-			}
-		}
-		if (eUp.Org !== eLo.Org) {
-			if (
-				eUp.Dst !== eLo.Dst &&
-				!regUp.fixUpperEdge &&
-				!regLo.fixUpperEdge &&
-				(eUp.Dst === tess.event || eLo.Dst === tess.event)
-			) {
-				if (Sweep.checkForIntersect(tess, regUp)) {
-					return;
-				}
-			} else {
-				Sweep.checkForRightSplice(tess, regUp);
-			}
-		}
-		if (eUp.Org === eLo.Org && eUp.Dst === eLo.Dst) {
-			Sweep.addWinding(eLo, eUp);
-			Sweep.deleteRegion(tess, regUp);
-			tess.mesh.delete(eUp);
-			regUp = Sweep.regionAbove(regLo);
-		}
-	}
-};
-Sweep.connectRightVertex = function(tess, regUp, eBottomLeft) {
-	var eNew;
-	var eTopLeft = eBottomLeft.Onext;
-	var regLo = Sweep.regionBelow(regUp);
-	var eUp = regUp.eUp;
-	var eLo = regLo.eUp;
-	var degenerate = false;
-	if (eUp.Dst !== eLo.Dst) {
-		Sweep.checkForIntersect(tess, regUp);
-	}
-	if (Geom.vertEq(eUp.Org, tess.event)) {
-		tess.mesh.splice(eTopLeft.Oprev, eUp);
-		regUp = Sweep.topLeftRegion(tess, regUp);
-		eTopLeft = Sweep.regionBelow(regUp).eUp;
-		Sweep.finishLeftRegions(tess, Sweep.regionBelow(regUp), regLo);
-		degenerate = true;
-	}
-	if (Geom.vertEq(eLo.Org, tess.event)) {
-		tess.mesh.splice(eBottomLeft, eLo.Oprev);
-		eBottomLeft = Sweep.finishLeftRegions(tess, regLo, null);
-		degenerate = true;
-	}
-	if (degenerate) {
-		Sweep.addRightEdges(
-			tess,
-			regUp,
-			eBottomLeft.Onext,
-			eTopLeft,
-			eTopLeft,
-			true,
-		);
-		return;
-	}
-	if (Geom.vertLeq(eLo.Org, eUp.Org)) {
-		eNew = eLo.Oprev;
-	} else {
-		eNew = eUp;
-	}
-	eNew = tess.mesh.connect(eBottomLeft.Lprev, eNew);
-	Sweep.addRightEdges(tess, regUp, eNew, eNew.Onext, eNew.Onext, false);
-	eNew.Sym.activeRegion.fixUpperEdge = true;
-	Sweep.walkDirtyRegions(tess, regUp);
-};
-Sweep.connectLeftDegenerate = function(tess, regUp, vEvent) {
-	var e, eTopLeft, eTopRight, eLast;
-	var reg;
-	e = regUp.eUp;
-	if (Geom.vertEq(e.Org, vEvent)) {
-		assert(false );
-		Sweep.spliceMergeVertices(tess, e, vEvent.anEdge);
-		return;
-	}
-	if (!Geom.vertEq(e.Dst, vEvent)) {
-		tess.mesh.splitEdge(e.Sym);
-		if (regUp.fixUpperEdge) {
-			tess.mesh.delete(e.Onext);
-			regUp.fixUpperEdge = false;
-		}
-		tess.mesh.splice(vEvent.anEdge, e);
-		Sweep.sweepEvent(tess, vEvent);
-		return;
-	}
-	assert(false );
-	regUp = Sweep.topRightRegion(regUp);
-	reg = Sweep.regionBelow(regUp);
-	eTopRight = reg.eUp.Sym;
-	eTopLeft = eLast = eTopRight.Onext;
-	if (reg.fixUpperEdge) {
-		assert(eTopLeft !== eTopRight);
-		Sweep.deleteRegion(tess, reg);
-		tess.mesh.delete(eTopRight);
-		eTopRight = eTopLeft.Oprev;
-	}
-	tess.mesh.splice(vEvent.anEdge, eTopRight);
-	if (!Geom.edgeGoesLeft(eTopLeft)) {
-		eTopLeft = null;
-	}
-	Sweep.addRightEdges(tess, regUp, eTopRight.Onext, eLast, eTopLeft, true);
-};
-Sweep.connectLeftVertex = function(tess, vEvent) {
-	var regUp, regLo, reg;
-	var eUp, eLo, eNew;
-	var tmp = new ActiveRegion();
-	tmp.eUp = vEvent.anEdge.Sym;
-	 regUp = tess.dict.search(tmp).key;
-	regLo = Sweep.regionBelow(regUp);
-	if (!regLo) {
-		return;
-	}
-	eUp = regUp.eUp;
-	eLo = regLo.eUp;
-	if (Geom.edgeSign(eUp.Dst, vEvent, eUp.Org) === 0.0) {
-		Sweep.connectLeftDegenerate(tess, regUp, vEvent);
-		return;
-	}
-	reg = Geom.vertLeq(eLo.Dst, eUp.Dst) ? regUp : regLo;
-	if (regUp.inside || reg.fixUpperEdge) {
-		if (reg === regUp) {
-			eNew = tess.mesh.connect(vEvent.anEdge.Sym, eUp.Lnext);
+		var regUp = Sweep.topLeftRegion(tess, e.activeRegion);
+		assert(regUp !== null);
+		var reg = Sweep.regionBelow(regUp);
+		var eTopLeft = reg.eUp;
+		var eBottomLeft = Sweep.finishLeftRegions(tess, reg, null);
+		if (eBottomLeft.Onext === eTopLeft) {
+			Sweep.connectRightVertex(tess, regUp, eBottomLeft);
 		} else {
-			var tempHalfEdge = tess.mesh.connect(eLo.Dnext, vEvent.anEdge);
-			eNew = tempHalfEdge.Sym;
-		}
-		if (reg.fixUpperEdge) {
-			Sweep.fixUpperEdge(tess, reg, eNew);
-		} else {
-			Sweep.computeWinding(tess, Sweep.addRegionBelow(tess, regUp, eNew));
-		}
-		Sweep.sweepEvent(tess, vEvent);
-	} else {
-		Sweep.addRightEdges(
-			tess,
-			regUp,
-			vEvent.anEdge,
-			vEvent.anEdge,
-			null,
-			true,
-		);
-	}
-};
-Sweep.sweepEvent = function(tess, vEvent) {
-	tess.event = vEvent;
-	Sweep.debugEvent(tess);
-	var e = vEvent.anEdge;
-	while (e.activeRegion === null) {
-		e = e.Onext;
-		if (e === vEvent.anEdge) {
-			Sweep.connectLeftVertex(tess, vEvent);
-			return;
-		}
-	}
-	var regUp = Sweep.topLeftRegion(tess, e.activeRegion);
-	assert(regUp !== null);
-	var reg = Sweep.regionBelow(regUp);
-	var eTopLeft = reg.eUp;
-	var eBottomLeft = Sweep.finishLeftRegions(tess, reg, null);
-	if (eBottomLeft.Onext === eTopLeft) {
-		Sweep.connectRightVertex(tess, regUp, eBottomLeft);
-	} else {
-		Sweep.addRightEdges(
-			tess,
-			regUp,
-			eBottomLeft.Onext,
-			eTopLeft,
-			eTopLeft,
-			true,
-		);
-	}
-};
-Sweep.addSentinel = function(tess, smin, smax, t) {
-	var reg = new ActiveRegion();
-	var e = tess.mesh.makeEdge();
-	e.Org.s = smax;
-	e.Org.t = t;
-	e.Dst.s = smin;
-	e.Dst.t = t;
-	tess.event = e.Dst;
-	reg.eUp = e;
-	reg.windingNumber = 0;
-	reg.inside = false;
-	reg.fixUpperEdge = false;
-	reg.sentinel = true;
-	reg.dirty = false;
-	reg.nodeUp = tess.dict.insert(reg);
-};
-Sweep.initEdgeDict = function(tess) {
-	tess.dict = new Dict(tess, Sweep.edgeLeq);
-	var w = tess.bmax[0] - tess.bmin[0];
-	var h = tess.bmax[1] - tess.bmin[1];
-	var smin = tess.bmin[0] - w;
-	var smax = tess.bmax[0] + w;
-	var tmin = tess.bmin[1] - h;
-	var tmax = tess.bmax[1] + h;
-	Sweep.addSentinel(tess, smin, smax, tmin);
-	Sweep.addSentinel(tess, smin, smax, tmax);
-};
-Sweep.doneEdgeDict = function(tess) {
-	var reg;
-	var fixedEdges = 0;
-	while ((reg = tess.dict.min().key) !== null) {
-		if (!reg.sentinel) {
-			assert(reg.fixUpperEdge);
-			assert(++fixedEdges === 1);
-		}
-		assert(reg.windingNumber === 0);
-		Sweep.deleteRegion(tess, reg);
-	}
-};
-Sweep.removeDegenerateEdges = function(tess) {
-	var e, eNext, eLnext;
-	var eHead = tess.mesh.eHead;
-	for (e = eHead.next; e !== eHead; e = eNext) {
-		eNext = e.next;
-		eLnext = e.Lnext;
-		if (Geom.vertEq(e.Org, e.Dst) && e.Lnext.Lnext !== e) {
-			Sweep.spliceMergeVertices(tess, eLnext, e);
-			tess.mesh.delete(e);
-			e = eLnext;
-			eLnext = e.Lnext;
-		}
-		if (eLnext.Lnext === e) {
-			if (eLnext !== e) {
-				if (eLnext === eNext || eLnext === eNext.Sym) {
-					eNext = eNext.next;
-				}
-				tess.mesh.delete(eLnext);
-			}
-			if (e === eNext || e === eNext.Sym) {
-				eNext = eNext.next;
-			}
-			tess.mesh.delete(e);
-		}
-	}
-};
-Sweep.initPriorityQ = function(tess) {
-	var pq;
-	var v, vHead;
-	var vertexCount = 0;
-	vHead = tess.mesh.vHead;
-	for (v = vHead.next; v !== vHead; v = v.next) {
-		vertexCount++;
-	}
-	vertexCount += 8;
-	pq = tess.pq = new PriorityQ(vertexCount, Geom.vertLeq);
-	vHead = tess.mesh.vHead;
-	for (v = vHead.next; v !== vHead; v = v.next) {
-		v.pqHandle = pq.insert(v);
-	}
-	if (v !== vHead) {
-		return false;
-	}
-	pq.init();
-	return true;
-};
-Sweep.donePriorityQ = function(tess) {
-	tess.pq = null;
-};
-Sweep.removeDegenerateFaces = function(tess, mesh) {
-	var f, fNext;
-	var e;
-	for (f = mesh.fHead.next; f !== mesh.fHead; f = fNext) {
-		fNext = f.next;
-		e = f.anEdge;
-		assert(e.Lnext !== e);
-		if (e.Lnext.Lnext === e) {
-			Sweep.addWinding(e.Onext, e);
-			tess.mesh.delete(e);
-		}
-	}
-	return true;
-};
-Sweep.computeInterior = function(tess) {
-	var v, vNext;
-	Sweep.removeDegenerateEdges(tess);
-	if (!Sweep.initPriorityQ(tess)) return false;
-	Sweep.initEdgeDict(tess);
-	while ((v = tess.pq.extractMin()) !== null) {
-		for (;;) {
-			vNext = tess.pq.min();
-			if (vNext === null || !Geom.vertEq(vNext, v)) break;
-			vNext = tess.pq.extractMin();
-			Sweep.spliceMergeVertices(tess, v.anEdge, vNext.anEdge);
-		}
-		Sweep.sweepEvent(tess, v);
-	}
-	tess.event = tess.dict.min().key.eUp.Org;
-	Sweep.debugEvent(tess);
-	Sweep.doneEdgeDict(tess);
-	Sweep.donePriorityQ(tess);
-	if (!Sweep.removeDegenerateFaces(tess, tess.mesh)) return false;
-	tess.mesh.check();
-	return true;
-};
-function Tesselator() {
-	this.mesh = null;
-	this.normal = [0.0, 0.0, 0.0];
-	this.sUnit = [0.0, 0.0, 0.0];
-	this.tUnit = [0.0, 0.0, 0.0];
-	this.bmin = [0.0, 0.0];
-	this.bmax = [0.0, 0.0];
-	this.windingRule =
-		Tess2.WINDING_ODD;
-	this.dict = null;
-	this.pq = null;
-	this.event = null;
-	this.vertexIndexCounter = 0;
-	this.vertices = [];
-	this.vertexIndices = [];
-	this.vertexCount = 0;
-	this.elements = [];
-	this.elementCount = 0;
-}
-Tesselator.prototype = {
-	dot_: function(u, v) {
-		return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
-	},
-	normalize_: function(v) {
-		var len = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
-		assert(len > 0.0);
-		len = Math.sqrt(len);
-		v[0] /= len;
-		v[1] /= len;
-		v[2] /= len;
-	},
-	longAxis_: function(v) {
-		var i = 0;
-		if (Math.abs(v[1]) > Math.abs(v[0])) {
-			i = 1;
-		}
-		if (Math.abs(v[2]) > Math.abs(v[i])) {
-			i = 2;
-		}
-		return i;
-	},
-	computeNormal_: function(norm) {
-		var v, v1, v2;
-		var c, tLen2, maxLen2;
-		var maxVal = [0, 0, 0],
-			minVal = [0, 0, 0],
-			d1 = [0, 0, 0],
-			d2 = [0, 0, 0],
-			tNorm = [0, 0, 0];
-		var maxVert = [null, null, null],
-			minVert = [null, null, null];
-		var vHead = this.mesh.vHead;
-		var i;
-		v = vHead.next;
-		for (i = 0; i < 3; ++i) {
-			c = v.coords[i];
-			minVal[i] = c;
-			minVert[i] = v;
-			maxVal[i] = c;
-			maxVert[i] = v;
-		}
-		for (v = vHead.next; v !== vHead; v = v.next) {
-			for (i = 0; i < 3; ++i) {
-				c = v.coords[i];
-				if (c < minVal[i]) {
-					minVal[i] = c;
-					minVert[i] = v;
-				}
-				if (c > maxVal[i]) {
-					maxVal[i] = c;
-					maxVert[i] = v;
-				}
-			}
-		}
-		i = 0;
-		if (maxVal[1] - minVal[1] > maxVal[0] - minVal[0]) {
-			i = 1;
-		}
-		if (maxVal[2] - minVal[2] > maxVal[i] - minVal[i]) {
-			i = 2;
-		}
-		if (minVal[i] >= maxVal[i]) {
-			norm[0] = 0;
-			norm[1] = 0;
-			norm[2] = 1;
-			return;
-		}
-		maxLen2 = 0;
-		v1 = minVert[i];
-		v2 = maxVert[i];
-		d1[0] = v1.coords[0] - v2.coords[0];
-		d1[1] = v1.coords[1] - v2.coords[1];
-		d1[2] = v1.coords[2] - v2.coords[2];
-		for (v = vHead.next; v !== vHead; v = v.next) {
-			d2[0] = v.coords[0] - v2.coords[0];
-			d2[1] = v.coords[1] - v2.coords[1];
-			d2[2] = v.coords[2] - v2.coords[2];
-			tNorm[0] = d1[1] * d2[2] - d1[2] * d2[1];
-			tNorm[1] = d1[2] * d2[0] - d1[0] * d2[2];
-			tNorm[2] = d1[0] * d2[1] - d1[1] * d2[0];
-			tLen2 =
-				tNorm[0] * tNorm[0] + tNorm[1] * tNorm[1] + tNorm[2] * tNorm[2];
-			if (tLen2 > maxLen2) {
-				maxLen2 = tLen2;
-				norm[0] = tNorm[0];
-				norm[1] = tNorm[1];
-				norm[2] = tNorm[2];
-			}
-		}
-		if (maxLen2 <= 0) {
-			norm[0] = norm[1] = norm[2] = 0;
-			norm[this.longAxis_(d1)] = 1;
-		}
-	},
-	checkOrientation_: function() {
-		var area;
-		var f,
-			fHead = this.mesh.fHead;
-		var v,
-			vHead = this.mesh.vHead;
-		var e;
-		area = 0;
-		for (f = fHead.next; f !== fHead; f = f.next) {
-			e = f.anEdge;
-			if (e.winding <= 0) continue;
-			do {
-				area += (e.Org.s - e.Dst.s) * (e.Org.t + e.Dst.t);
-				e = e.Lnext;
-			} while (e !== f.anEdge);
-		}
-		if (area < 0) {
-			for (v = vHead.next; v !== vHead; v = v.next) {
-				v.t = -v.t;
-			}
-			this.tUnit[0] = -this.tUnit[0];
-			this.tUnit[1] = -this.tUnit[1];
-			this.tUnit[2] = -this.tUnit[2];
-		}
-	},
-	projectPolygon_: function() {
-		var v,
-			vHead = this.mesh.vHead;
-		var norm = [0, 0, 0];
-		var sUnit, tUnit;
-		var i,
-			first,
-			computedNormal = false;
-		norm[0] = this.normal[0];
-		norm[1] = this.normal[1];
-		norm[2] = this.normal[2];
-		if (norm[0] === 0.0 && norm[1] === 0.0 && norm[2] === 0.0) {
-			this.computeNormal_(norm);
-			computedNormal = true;
-		}
-		sUnit = this.sUnit;
-		tUnit = this.tUnit;
-		i = this.longAxis_(norm);
-		sUnit[i] = 0;
-		sUnit[(i + 1) % 3] = 1.0;
-		sUnit[(i + 2) % 3] = 0.0;
-		tUnit[i] = 0;
-		tUnit[(i + 1) % 3] = 0.0;
-		tUnit[(i + 2) % 3] = norm[i] > 0 ? 1.0 : -1.0;
-		for (v = vHead.next; v !== vHead; v = v.next) {
-			v.s = this.dot_(v.coords, sUnit);
-			v.t = this.dot_(v.coords, tUnit);
-		}
-		if (computedNormal) {
-			this.checkOrientation_();
-		}
-		first = true;
-		for (v = vHead.next; v !== vHead; v = v.next) {
-			if (first) {
-				this.bmin[0] = this.bmax[0] = v.s;
-				this.bmin[1] = this.bmax[1] = v.t;
-				first = false;
-			} else {
-				if (v.s < this.bmin[0]) this.bmin[0] = v.s;
-				if (v.s > this.bmax[0]) this.bmax[0] = v.s;
-				if (v.t < this.bmin[1]) this.bmin[1] = v.t;
-				if (v.t > this.bmax[1]) this.bmax[1] = v.t;
-			}
-		}
-	},
-	addWinding_: function(eDst, eSrc) {
-		eDst.winding += eSrc.winding;
-		eDst.Sym.winding += eSrc.Sym.winding;
-	},
-	tessellateMonoRegion_: function(mesh, face) {
-		var up, lo;
-		up = face.anEdge;
-		assert(up.Lnext !== up && up.Lnext.Lnext !== up);
-		for (; Geom.vertLeq(up.Dst, up.Org); up = up.Lprev);
-		for (; Geom.vertLeq(up.Org, up.Dst); up = up.Lnext);
-		lo = up.Lprev;
-		while (up.Lnext !== lo) {
-			if (Geom.vertLeq(up.Dst, lo.Org)) {
-				while (
-					lo.Lnext !== up &&
-					(Geom.edgeGoesLeft(lo.Lnext) ||
-						Geom.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0)
-				) {
-					var tempHalfEdge = mesh.connect(lo.Lnext, lo);
-					lo = tempHalfEdge.Sym;
-				}
-				lo = lo.Lprev;
-			} else {
-				while (
-					lo.Lnext !== up &&
-					(Geom.edgeGoesRight(up.Lprev) ||
-						Geom.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0)
-				) {
-					var tempHalfEdge = mesh.connect(up, up.Lprev);
-					up = tempHalfEdge.Sym;
-				}
-				up = up.Lnext;
-			}
-		}
-		assert(lo.Lnext !== up);
-		while (lo.Lnext.Lnext !== up) {
-			var tempHalfEdge = mesh.connect(lo.Lnext, lo);
-			lo = tempHalfEdge.Sym;
-		}
-		return true;
-	},
-	tessellateInterior_: function(mesh) {
-		var f, next;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = next) {
-			next = f.next;
-			if (f.inside) {
-				if (!this.tessellateMonoRegion_(mesh, f)) return false;
-			}
-		}
-		return true;
-	},
-	discardExterior_: function(mesh) {
-		var f, next;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = next) {
-			next = f.next;
-			if (!f.inside) {
-				mesh.zapFace(f);
-			}
-		}
-	},
-	setWindingNumber_: function(mesh, value, keepOnlyBoundary) {
-		var e, eNext;
-		for (e = mesh.eHead.next; e !== mesh.eHead; e = eNext) {
-			eNext = e.next;
-			if (e.Rface.inside !== e.Lface.inside) {
-				e.winding = e.Lface.inside ? value : -value;
-			} else {
-				if (!keepOnlyBoundary) {
-					e.winding = 0;
-				} else {
-					mesh.delete(e);
-				}
-			}
-		}
-	},
-	getNeighbourFace_: function(edge) {
-		if (!edge.Rface) return -1;
-		if (!edge.Rface.inside) return -1;
-		return edge.Rface.n;
-	},
-	outputPolymesh_: function(mesh, elementType, polySize, vertexSize) {
-		var v;
-		var f;
-		var edge;
-		var maxFaceCount = 0;
-		var maxVertexCount = 0;
-		var faceVerts, i;
-		if (polySize > 3) {
-			mesh.mergeConvexFaces(polySize);
-		}
-		for (v = mesh.vHead.next; v !== mesh.vHead; v = v.next) v.n = -1;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
-			f.n = -1;
-			if (!f.inside) continue;
-			edge = f.anEdge;
-			faceVerts = 0;
-			do {
-				v = edge.Org;
-				if (v.n === -1) {
-					v.n = maxVertexCount;
-					maxVertexCount++;
-				}
-				faceVerts++;
-				edge = edge.Lnext;
-			} while (edge !== f.anEdge);
-			assert(faceVerts <= polySize);
-			f.n = maxFaceCount;
-			++maxFaceCount;
-		}
-		this.elementCount = maxFaceCount;
-		if (elementType === Tess2.CONNECTED_POLYGONS) maxFaceCount *= 2;
-		this.elements = [];
-		this.elements.length = maxFaceCount * polySize;
-		this.vertexCount = maxVertexCount;
-		this.vertices = [];
-		this.vertices.length = maxVertexCount * vertexSize;
-		this.vertexIndices = [];
-		this.vertexIndices.length = maxVertexCount;
-		for (v = mesh.vHead.next; v !== mesh.vHead; v = v.next) {
-			if (v.n !== -1) {
-				var idx = v.n * vertexSize;
-				this.vertices[idx + 0] = v.coords[0];
-				this.vertices[idx + 1] = v.coords[1];
-				if (vertexSize > 2) this.vertices[idx + 2] = v.coords[2];
-				this.vertexIndices[v.n] = v.idx;
-			}
-		}
-		var nel = 0;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
-			if (!f.inside) continue;
-			edge = f.anEdge;
-			faceVerts = 0;
-			do {
-				v = edge.Org;
-				this.elements[nel++] = v.n;
-				faceVerts++;
-				edge = edge.Lnext;
-			} while (edge !== f.anEdge);
-			for (i = faceVerts; i < polySize; ++i) this.elements[nel++] = -1;
-			if (elementType === Tess2.CONNECTED_POLYGONS) {
-				edge = f.anEdge;
-				do {
-					this.elements[nel++] = this.getNeighbourFace_(edge);
-					edge = edge.Lnext;
-				} while (edge !== f.anEdge);
-				for (i = faceVerts; i < polySize; ++i)
-					this.elements[nel++] = -1;
-			}
-		}
-	},
-	outputContours_: function(mesh, vertexSize) {
-		var f;
-		var edge;
-		var start;
-		var startVert = 0;
-		var vertCount = 0;
-		this.vertexCount = 0;
-		this.elementCount = 0;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
-			if (!f.inside) continue;
-			start = edge = f.anEdge;
-			do {
-				this.vertexCount++;
-				edge = edge.Lnext;
-			} while (edge !== start);
-			this.elementCount++;
-		}
-		this.elements = [];
-		this.elements.length = this.elementCount * 2;
-		this.vertices = [];
-		this.vertices.length = this.vertexCount * vertexSize;
-		this.vertexIndices = [];
-		this.vertexIndices.length = this.vertexCount;
-		var nv = 0;
-		var nvi = 0;
-		var nel = 0;
-		startVert = 0;
-		for (f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
-			if (!f.inside) continue;
-			vertCount = 0;
-			start = edge = f.anEdge;
-			do {
-				this.vertices[nv++] = edge.Org.coords[0];
-				this.vertices[nv++] = edge.Org.coords[1];
-				if (vertexSize > 2) this.vertices[nv++] = edge.Org.coords[2];
-				this.vertexIndices[nvi++] = edge.Org.idx;
-				vertCount++;
-				edge = edge.Lnext;
-			} while (edge !== start);
-			this.elements[nel++] = startVert;
-			this.elements[nel++] = vertCount;
-			startVert += vertCount;
-		}
-	},
-	addContour: function(size, vertices) {
-		var e;
-		var i;
-		if (this.mesh === null) this.mesh = new TESSmesh();
-		if (size < 2) size = 2;
-		if (size > 3) size = 3;
-		e = null;
-		for (i = 0; i < vertices.length; i += size) {
-			if (e === null) {
-				e = this.mesh.makeEdge();
-				this.mesh.splice(e, e.Sym);
-			} else {
-				this.mesh.splitEdge(e);
-				e = e.Lnext;
-			}
-			e.Org.coords[0] = vertices[i + 0];
-			e.Org.coords[1] = vertices[i + 1];
-			if (size > 2) e.Org.coords[2] = vertices[i + 2];
-			else e.Org.coords[2] = 0.0;
-			e.Org.idx = this.vertexIndexCounter++;
-			e.winding = 1;
-			e.Sym.winding = -1;
-		}
-	},
-	tesselate: function(
-		windingRule,
-		elementType,
-		polySize,
-		vertexSize,
-		normal,
-	) {
-		this.vertices = [];
-		this.elements = [];
-		this.vertexIndices = [];
-		this.vertexIndexCounter = 0;
-		if (normal) {
-			this.normal[0] = normal[0];
-			this.normal[1] = normal[1];
-			this.normal[2] = normal[2];
-		}
-		this.windingRule = windingRule;
-		if (vertexSize < 2) vertexSize = 2;
-		if (vertexSize > 3) vertexSize = 3;
-		if (!this.mesh) {
-			return false;
-		}
-		this.projectPolygon_();
-		Sweep.computeInterior(this);
-		var mesh = this.mesh;
-		if (elementType === Tess2.BOUNDARY_CONTOURS) {
-			this.setWindingNumber_(mesh, 1, true);
-		} else {
-			this.tessellateInterior_(mesh);
-		}
-		mesh.check();
-		if (elementType === Tess2.BOUNDARY_CONTOURS) {
-			this.outputContours_(mesh, vertexSize);
-		} else {
-			this.outputPolymesh_(
-				mesh,
-				elementType,
-				polySize,
-				vertexSize,
+			Sweep.addRightEdges(
+				tess,
+				regUp,
+				eBottomLeft.Onext,
+				eTopLeft,
+				eTopLeft,
+				true,
 			);
 		}
+	}
+	static addSentinel(tess, smin, smax, t) {
+		var reg = new ActiveRegion();
+		var e = tess.mesh.makeEdge();
+		e.Org.s = smax;
+		e.Org.t = t;
+		e.Dst.s = smin;
+		e.Dst.t = t;
+		tess.event = e.Dst;
+		reg.eUp = e;
+		reg.windingNumber = 0;
+		reg.inside = false;
+		reg.fixUpperEdge = false;
+		reg.sentinel = true;
+		reg.dirty = false;
+		reg.nodeUp = tess.dict.insert(reg);
+	}
+	static initEdgeDict(tess) {
+		tess.dict = new Dict(tess, Sweep.edgeLeq);
+		var w = tess.bmax[0] - tess.bmin[0];
+		var h = tess.bmax[1] - tess.bmin[1];
+		var smin = tess.bmin[0] - w;
+		var smax = tess.bmax[0] + w;
+		var tmin = tess.bmin[1] - h;
+		var tmax = tess.bmax[1] + h;
+		Sweep.addSentinel(tess, smin, smax, tmin);
+		Sweep.addSentinel(tess, smin, smax, tmax);
+	}
+	static doneEdgeDict(tess) {
+		var reg;
+		var fixedEdges = 0;
+		while ((reg = tess.dict.min().key) !== null) {
+			if (!reg.sentinel) {
+				assert(reg.fixUpperEdge);
+				assert(++fixedEdges === 1);
+			}
+			assert(reg.windingNumber === 0);
+			Sweep.deleteRegion(tess, reg);
+		}
+	}
+	static removeDegenerateEdges(tess) {
+		var e, eNext, eLnext;
+		var eHead = tess.mesh.eHead;
+		for (e = eHead.next; e !== eHead; e = eNext) {
+			eNext = e.next;
+			eLnext = e.Lnext;
+			if (Geom.vertEq(e.Org, e.Dst) && e.Lnext.Lnext !== e) {
+				Sweep.spliceMergeVertices(tess, eLnext, e);
+				tess.mesh.delete(e);
+				e = eLnext;
+				eLnext = e.Lnext;
+			}
+			if (eLnext.Lnext === e) {
+				if (eLnext !== e) {
+					if (eLnext === eNext || eLnext === eNext.Sym) {
+						eNext = eNext.next;
+					}
+					tess.mesh.delete(eLnext);
+				}
+				if (e === eNext || e === eNext.Sym) {
+					eNext = eNext.next;
+				}
+				tess.mesh.delete(e);
+			}
+		}
+	}
+	static initPriorityQ(tess) {
+		var pq;
+		var v, vHead;
+		var vertexCount = 0;
+		vHead = tess.mesh.vHead;
+		for (v = vHead.next; v !== vHead; v = v.next) {
+			vertexCount++;
+		}
+		vertexCount += 8;
+		pq = tess.pq = new PriorityQ(vertexCount, Geom.vertLeq);
+		vHead = tess.mesh.vHead;
+		for (v = vHead.next; v !== vHead; v = v.next) {
+			v.pqHandle = pq.insert(v);
+		}
+		if (v !== vHead) {
+			return false;
+		}
+		pq.init();
 		return true;
-	},
-};
+	}
+	static donePriorityQ(tess) {
+		tess.pq = null;
+	}
+	static removeDegenerateFaces(tess, mesh) {
+		var f, fNext;
+		var e;
+		for (f = mesh.fHead.next; f !== mesh.fHead; f = fNext) {
+			fNext = f.next;
+			e = f.anEdge;
+			assert(e.Lnext !== e);
+			if (e.Lnext.Lnext === e) {
+				Sweep.addWinding(e.Onext, e);
+				tess.mesh.delete(e);
+			}
+		}
+		return true;
+	}
+	static computeInterior(tess) {
+		var v, vNext;
+		Sweep.removeDegenerateEdges(tess);
+		if (!Sweep.initPriorityQ(tess)) return false;
+		Sweep.initEdgeDict(tess);
+		while ((v = tess.pq.extractMin()) !== null) {
+			for (;;) {
+				vNext = tess.pq.min();
+				if (vNext === null || !Geom.vertEq(vNext, v)) break;
+				vNext = tess.pq.extractMin();
+				Sweep.spliceMergeVertices(tess, v.anEdge, vNext.anEdge);
+			}
+			Sweep.sweepEvent(tess, v);
+		}
+		tess.event = tess.dict.min().key.eUp.Org;
+		Sweep.debugEvent(tess);
+		Sweep.doneEdgeDict(tess);
+		Sweep.donePriorityQ(tess);
+		if (!Sweep.removeDegenerateFaces(tess, tess.mesh)) return false;
+		tess.mesh.check();
+		return true;
+	}
+}
 
-export { MODE, Tess2, WINDING };
+class Tesselator {
+    constructor() {
+        /*** state needed for collecting the input data ***/
+        /* stores the input contours, and eventually the tessellation itself */
+        this.mesh = new TESSmesh();
+        /*** state needed for projecting onto the sweep plane ***/
+        this.normal = [0.0, 0.0, 0.0]; /* user-specified normal (if provided) */
+        this.sUnit = [0.0, 0.0, 0.0]; /* unit vector in s-direction (debugging) */
+        this.tUnit = [0.0, 0.0, 0.0]; /* unit vector in t-direction (debugging) */
+        this.bmin = [0.0, 0.0];
+        this.bmax = [0.0, 0.0];
+        /*** state needed for the line sweep ***/
+        /* rule for determining polygon interior */
+        this.windingRule = WINDING.ODD;
+        this.dict = null; /* edge dictionary for sweep line */
+        this.pq = null; /* priority queue of vertex events */
+        this.event = null; /* current sweep event being processed */
+        this.vertexIndexCounter = 0;
+        this.vertices = [];
+        this.vertexIndices = [];
+        this.vertexCount = 0;
+        this.elements = [];
+        this.elementCount = 0;
+    }
+    dot_(u, v) {
+        return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+    }
+    normalize_(v) {
+        let len = v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
+        if (!len) {
+            throw "Zero-size vector!";
+        }
+        len = Math.sqrt(len);
+        v[0] /= len;
+        v[1] /= len;
+        v[2] /= len;
+    }
+    longAxis_(v) {
+        let i = 0;
+        if (Math.abs(v[1]) > Math.abs(v[0])) {
+            i = 1;
+        }
+        if (Math.abs(v[2]) > Math.abs(v[i])) {
+            i = 2;
+        }
+        return i;
+    }
+    computeNormal_(norm) {
+        let v, v1, v2;
+        let c, tLen2, maxLen2;
+        let maxVal = [0, 0, 0], minVal = [0, 0, 0], d1 = [0, 0, 0], d2 = [0, 0, 0], tNorm = [0, 0, 0];
+        const maxVert = [null, null, null], minVert = [null, null, null];
+        const vHead = this.mesh.vHead;
+        v = vHead.next;
+        for (let i = 0; i < 3; ++i) {
+            c = v.coords[i];
+            minVal[i] = c;
+            minVert[i] = v;
+            maxVal[i] = c;
+            maxVert[i] = v;
+        }
+        for (v = vHead.next; v !== vHead; v = v.next) {
+            for (let i = 0; i < 3; ++i) {
+                c = v.coords[i];
+                if (c < minVal[i]) {
+                    minVal[i] = c;
+                    minVert[i] = v;
+                }
+                if (c > maxVal[i]) {
+                    maxVal[i] = c;
+                    maxVert[i] = v;
+                }
+            }
+        }
+        /* Find two vertices separated by at least 1/sqrt(3) of the maximum
+         * distance between any two vertices
+         */
+        let i = 0;
+        if (maxVal[1] - minVal[1] > maxVal[0] - minVal[0]) {
+            i = 1;
+        }
+        if (maxVal[2] - minVal[2] > maxVal[i] - minVal[i]) {
+            i = 2;
+        }
+        if (minVal[i] >= maxVal[i]) {
+            /* All vertices are the same -- normal doesn't matter */
+            norm[0] = 0;
+            norm[1] = 0;
+            norm[2] = 1;
+            return;
+        }
+        /* Look for a third vertex which forms the triangle with maximum area
+         * (Length of normal == twice the triangle area)
+         */
+        maxLen2 = 0;
+        v1 = minVert[i];
+        v2 = maxVert[i];
+        d1[0] = v1.coords[0] - v2.coords[0];
+        d1[1] = v1.coords[1] - v2.coords[1];
+        d1[2] = v1.coords[2] - v2.coords[2];
+        for (v = vHead.next; v !== vHead; v = v.next) {
+            d2[0] = v.coords[0] - v2.coords[0];
+            d2[1] = v.coords[1] - v2.coords[1];
+            d2[2] = v.coords[2] - v2.coords[2];
+            tNorm[0] = d1[1] * d2[2] - d1[2] * d2[1];
+            tNorm[1] = d1[2] * d2[0] - d1[0] * d2[2];
+            tNorm[2] = d1[0] * d2[1] - d1[1] * d2[0];
+            tLen2 = tNorm[0] * tNorm[0] + tNorm[1] * tNorm[1] + tNorm[2] * tNorm[2];
+            if (tLen2 > maxLen2) {
+                maxLen2 = tLen2;
+                norm[0] = tNorm[0];
+                norm[1] = tNorm[1];
+                norm[2] = tNorm[2];
+            }
+        }
+        if (maxLen2 <= 0) {
+            /* All points lie on a single line -- any decent normal will do */
+            norm[0] = norm[1] = norm[2] = 0;
+            norm[this.longAxis_(d1)] = 1;
+        }
+    }
+    checkOrientation_() {
+        var fHead = this.mesh.fHead;
+        var v, vHead = this.mesh.vHead;
+        var e;
+        /* When we compute the normal automatically, we choose the orientation
+         * so that the the sum of the signed areas of all contours is non-negative.
+         */
+        let area = 0;
+        for (let f = fHead.next; f !== fHead; f = f.next) {
+            e = f.anEdge;
+            if (e.winding <= 0)
+                continue;
+            do {
+                area += (e.Org.s - e.Dst.s) * (e.Org.t + e.Dst.t);
+                e = e.Lnext;
+            } while (e !== f.anEdge);
+        }
+        if (area < 0) {
+            /* Reverse the orientation by flipping all the t-coordinates */
+            for (v = vHead.next; v !== vHead; v = v.next) {
+                v.t = -v.t;
+            }
+            this.tUnit[0] = -this.tUnit[0];
+            this.tUnit[1] = -this.tUnit[1];
+            this.tUnit[2] = -this.tUnit[2];
+        }
+    }
+    /*	#ifdef FOR_TRITE_TEST_PROGRAM
+        #include <stdlib.h>
+        extern int RandomSweep;
+        #define S_UNIT_X	(RandomSweep ? (2*drand48()-1) : 1.0)
+        #define S_UNIT_Y	(RandomSweep ? (2*drand48()-1) : 0.0)
+        #else
+        #if defined(SLANTED_SWEEP) */
+    /* The "feature merging" is not intended to be complete.  There are
+     * special cases where edges are nearly parallel to the sweep line
+     * which are not implemented.  The algorithm should still behave
+     * robustly (ie. produce a reasonable tesselation) in the presence
+     * of such edges, however it may miss features which could have been
+     * merged.  We could minimize this effect by choosing the sweep line
+     * direction to be something unusual (ie. not parallel to one of the
+     * coordinate axes).
+     */
+    /*	#define S_UNIT_X	(TESSreal)0.50941539564955385	// Pre-normalized
+        #define S_UNIT_Y	(TESSreal)0.86052074622010633
+        #else
+        #define S_UNIT_X	(TESSreal)1.0
+        #define S_UNIT_Y	(TESSreal)0.0
+        #endif
+        #endif*/
+    /* Determine the polygon normal and project vertices onto the plane
+     * of the polygon.
+     */
+    projectPolygon_() {
+        let vHead = this.mesh.vHead;
+        let norm = [0, 0, 0];
+        let sUnit, tUnit;
+        let computedNormal = false;
+        norm[0] = this.normal[0];
+        norm[1] = this.normal[1];
+        norm[2] = this.normal[2];
+        if (!norm[0] && !norm[1] && !norm[2]) {
+            this.computeNormal_(norm);
+            computedNormal = true;
+        }
+        sUnit = this.sUnit;
+        tUnit = this.tUnit;
+        let axis = this.longAxis_(norm);
+        /*	#if defined(FOR_TRITE_TEST_PROGRAM) || defined(TRUE_PROJECT)
+            // Choose the initial sUnit vector to be approximately perpendicular
+            // to the normal.
+            
+            Normalize( norm );
+
+            sUnit[i] = 0;
+            sUnit[(i+1)%3] = S_UNIT_X;
+            sUnit[(i+2)%3] = S_UNIT_Y;
+
+            // Now make it exactly perpendicular
+            w = Dot( sUnit, norm );
+            sUnit[0] -= w * norm[0];
+            sUnit[1] -= w * norm[1];
+            sUnit[2] -= w * norm[2];
+            Normalize( sUnit );
+
+            // Choose tUnit so that (sUnit,tUnit,norm) form a right-handed frame
+            tUnit[0] = norm[1]*sUnit[2] - norm[2]*sUnit[1];
+            tUnit[1] = norm[2]*sUnit[0] - norm[0]*sUnit[2];
+            tUnit[2] = norm[0]*sUnit[1] - norm[1]*sUnit[0];
+            Normalize( tUnit );
+        #else*/
+        /* Project perpendicular to a coordinate axis -- better numerically */
+        sUnit[axis] = 0;
+        sUnit[(axis + 1) % 3] = 1.0;
+        sUnit[(axis + 2) % 3] = 0.0;
+        tUnit[axis] = 0;
+        tUnit[(axis + 1) % 3] = 0.0;
+        tUnit[(axis + 2) % 3] = norm[axis] > 0 ? 1.0 : -1.0;
+        //	#endif
+        /* Project the vertices onto the sweep plane */
+        for (let v = vHead.next; v !== vHead; v = v.next) {
+            v.s = this.dot_(v.coords, sUnit);
+            v.t = this.dot_(v.coords, tUnit);
+        }
+        if (computedNormal) {
+            this.checkOrientation_();
+        }
+        /* Compute ST bounds. */
+        let first = true;
+        for (let v = vHead.next; v !== vHead; v = v.next) {
+            if (first) {
+                this.bmin[0] = this.bmax[0] = v.s;
+                this.bmin[1] = this.bmax[1] = v.t;
+                first = false;
+            }
+            else {
+                if (v.s < this.bmin[0])
+                    this.bmin[0] = v.s;
+                if (v.s > this.bmax[0])
+                    this.bmax[0] = v.s;
+                if (v.t < this.bmin[1])
+                    this.bmin[1] = v.t;
+                if (v.t > this.bmax[1])
+                    this.bmax[1] = v.t;
+            }
+        }
+    }
+    addWinding_(eDst, eSrc) {
+        eDst.winding += eSrc.winding;
+        eDst.Sym.winding += eSrc.Sym.winding;
+    }
+    /* tessMeshTessellateMonoRegion( face ) tessellates a monotone region
+     * (what else would it do??)  The region must consist of a single
+     * loop of half-edges (see mesh.h) oriented CCW.  "Monotone" in this
+     * case means that any vertical line intersects the interior of the
+     * region in a single interval.
+     *
+     * Tessellation consists of adding interior edges (actually pairs of
+     * half-edges), to split the region into non-overlapping triangles.
+     *
+     * The basic idea is explained in Preparata and Shamos (which I don''t
+     * have handy right now), although their implementation is more
+     * complicated than this one.  The are two edge chains, an upper chain
+     * and a lower chain.  We process all vertices from both chains in order,
+     * from right to left.
+     *
+     * The algorithm ensures that the following invariant holds after each
+     * vertex is processed: the untessellated region consists of two
+     * chains, where one chain (say the upper) is a single edge, and
+     * the other chain is concave.  The left vertex of the single edge
+     * is always to the left of all vertices in the concave chain.
+     *
+     * Each step consists of adding the rightmost unprocessed vertex to one
+     * of the two chains, and forming a fan of triangles from the rightmost
+     * of two chain endpoints.  Determining whether we can add each triangle
+     * to the fan is a simple orientation test.  By making the fan as large
+     * as possible, we restore the invariant (check it yourself).
+     */
+    //	int tessMeshTessellateMonoRegion( TESSmesh *mesh, TESSface *face )
+    tessellateMonoRegion_(mesh, face) {
+        let up, lo;
+        /* All edges are oriented CCW around the boundary of the region.
+         * First, find the half-edge whose origin vertex is rightmost.
+         * Since the sweep goes from left to right, face->anEdge should
+         * be close to the edge we want.
+         */
+        up = face.anEdge;
+        if (!(up.Lnext !== up && up.Lnext.Lnext !== up)) {
+            throw "Mono region invalid";
+        }
+        for (; Geom$1.vertLeq(up.Dst, up.Org); up = up.Lprev)
+            ;
+        for (; Geom$1.vertLeq(up.Org, up.Dst); up = up.Lnext)
+            ;
+        lo = up.Lprev;
+        let tempHalfEdge = undefined;
+        while (up.Lnext !== lo) {
+            if (Geom$1.vertLeq(up.Dst, lo.Org)) {
+                /* up->Dst is on the left.  It is safe to form triangles from lo->Org.
+                 * The EdgeGoesLeft test guarantees progress even when some triangles
+                 * are CW, given that the upper and lower chains are truly monotone.
+                 */
+                while (lo.Lnext !== up &&
+                    (Geom$1.edgeGoesLeft(lo.Lnext) ||
+                        Geom$1.edgeSign(lo.Org, lo.Dst, lo.Lnext.Dst) <= 0.0)) {
+                    tempHalfEdge = mesh.connect(lo.Lnext, lo);
+                    //if (tempHalfEdge == NULL) return 0;
+                    lo = tempHalfEdge.Sym;
+                }
+                lo = lo.Lprev;
+            }
+            else {
+                /* lo->Org is on the left.  We can make CCW triangles from up->Dst. */
+                while (lo.Lnext !== up &&
+                    (Geom$1.edgeGoesRight(up.Lprev) ||
+                        Geom$1.edgeSign(up.Dst, up.Org, up.Lprev.Org) >= 0.0)) {
+                    tempHalfEdge = mesh.connect(up, up.Lprev);
+                    //if (tempHalfEdge == NULL) return 0;
+                    up = tempHalfEdge.Sym;
+                }
+                up = up.Lnext;
+            }
+        }
+        /* Now lo->Org == up->Dst == the leftmost vertex.  The remaining region
+         * can be tessellated in a fan from this leftmost vertex.
+         */
+        if (lo.Lnext === up) {
+            throw "Mono region invalid";
+        }
+        while (lo.Lnext.Lnext !== up) {
+            tempHalfEdge = mesh.connect(lo.Lnext, lo);
+            //if (tempHalfEdge == NULL) return 0;
+            lo = tempHalfEdge.Sym;
+        }
+        return true;
+    }
+    /* tessMeshTessellateInterior( mesh ) tessellates each region of
+     * the mesh which is marked "inside" the polygon.  Each such region
+     * must be monotone.
+     */
+    //int tessMeshTessellateInterior( TESSmesh *mesh )
+    tessellateInterior_(mesh) {
+        let next;
+        /*LINTED*/
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = next) {
+            /* Make sure we don''t try to tessellate the new triangles. */
+            next = f.next;
+            if (f.inside) {
+                if (!this.tessellateMonoRegion_(mesh, f)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    /* tessMeshDiscardExterior( mesh ) zaps (ie. sets to NULL) all faces
+     * which are not marked "inside" the polygon.  Since further mesh operations
+     * on NULL faces are not allowed, the main purpose is to clean up the
+     * mesh so that exterior loops are not represented in the data structure.
+     */
+    //void tessMeshDiscardExterior( TESSmesh *mesh )
+    discardExterior_(mesh) {
+        let next;
+        /*LINTED*/
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = next) {
+            /* Since f will be destroyed, save its next pointer. */
+            next = f.next;
+            if (!f.inside) {
+                mesh.zapFace(f);
+            }
+        }
+    }
+    /* tessMeshSetWindingNumber( mesh, value, keepOnlyBoundary ) resets the
+     * winding numbers on all edges so that regions marked "inside" the
+     * polygon have a winding number of "value", and regions outside
+     * have a winding number of 0.
+     *
+     * If keepOnlyBoundary is TRUE, it also deletes all edges which do not
+     * separate an interior region from an exterior one.
+     */
+    //	int tessMeshSetWindingNumber( TESSmesh *mesh, int value, int keepOnlyBoundary )
+    setWindingNumber_(mesh, value, keepOnlyBoundary) {
+        let eNext;
+        for (let e = mesh.eHead.next; e !== mesh.eHead; e = eNext) {
+            eNext = e.next;
+            if (e.Rface.inside !== e.Lface.inside) {
+                /* This is a boundary edge (one side is interior, one is exterior). */
+                e.winding = e.Lface.inside ? value : -value;
+            }
+            else {
+                /* Both regions are interior, or both are exterior. */
+                if (!keepOnlyBoundary) {
+                    e.winding = 0;
+                }
+                else {
+                    mesh.delete(e);
+                }
+            }
+        }
+    }
+    getNeighbourFace_(edge) {
+        if (!edge.Rface)
+            return -1;
+        if (!edge.Rface.inside)
+            return -1;
+        return edge.Rface.n;
+    }
+    outputPolymesh_(mesh, elementType, polySize, vertexSize) {
+        let edge;
+        let maxFaceCount = 0;
+        let maxVertexCount = 0;
+        let faceVerts;
+        // Assume that the input data is triangles now.
+        // Try to merge as many polygons as possible
+        if (polySize > 3) {
+            mesh.mergeConvexFaces(polySize);
+        }
+        // Mark unused
+        for (let v = mesh.vHead.next; v !== mesh.vHead; v = v.next) {
+            v.n = -1;
+        }
+        // Create unique IDs for all vertices and faces.
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
+            f.n = -1;
+            if (!f.inside) {
+                continue;
+            }
+            edge = f.anEdge;
+            faceVerts = 0;
+            do {
+                let v = edge.Org;
+                if (v.n === -1) {
+                    v.n = maxVertexCount;
+                    maxVertexCount++;
+                }
+                faceVerts++;
+                edge = edge.Lnext;
+            } while (edge !== f.anEdge);
+            if (!(faceVerts > polySize)) {
+                throw `Face vertex greater that support polygon`;
+            }
+            f.n = maxFaceCount;
+            ++maxFaceCount;
+        }
+        this.elementCount = maxFaceCount;
+        if (elementType === MODE.CONNECTED_POLYGONS) {
+            maxFaceCount *= 2;
+        }
+        /*		tess.elements = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
+                                                              sizeof(TESSindex) * maxFaceCount * polySize );
+            if (!tess->elements)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.elements = [];
+        this.elements.length = maxFaceCount * polySize;
+        this.vertexCount = maxVertexCount;
+        /*		tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
+                                                             sizeof(TESSreal) * tess->vertexCount * vertexSize );
+            if (!tess->vertices)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.vertices = [];
+        this.vertices.length = maxVertexCount * vertexSize;
+        /*		tess->vertexIndices = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
+                                                                    sizeof(TESSindex) * tess->vertexCount );
+            if (!tess->vertexIndices)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.vertexIndices = [];
+        this.vertexIndices.length = maxVertexCount;
+        // Output vertices.
+        for (let v = mesh.vHead.next; v !== mesh.vHead; v = v.next) {
+            if (v.n !== -1) {
+                // Store coordinate
+                var idx = v.n * vertexSize;
+                this.vertices[idx + 0] = v.coords[0];
+                this.vertices[idx + 1] = v.coords[1];
+                if (vertexSize > 2)
+                    this.vertices[idx + 2] = v.coords[2];
+                // Store vertex index.
+                this.vertexIndices[v.n] = v.idx;
+            }
+        }
+        // Output indices.
+        let nel = 0;
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
+            if (!f.inside)
+                continue;
+            // Store polygon
+            edge = f.anEdge;
+            faceVerts = 0;
+            do {
+                let v = edge.Org;
+                this.elements[nel++] = v.n;
+                faceVerts++;
+                edge = edge.Lnext;
+            } while (edge !== f.anEdge);
+            // Fill unused.
+            for (let i = faceVerts; i < polySize; ++i) {
+                this.elements[nel++] = -1;
+            }
+            // Store polygon connectivity
+            if (elementType === MODE.CONNECTED_POLYGONS) {
+                edge = f.anEdge;
+                do {
+                    this.elements[nel++] = this.getNeighbourFace_(edge);
+                    edge = edge.Lnext;
+                } while (edge !== f.anEdge);
+                // Fill unused.
+                for (let i = faceVerts; i < polySize; ++i) {
+                    this.elements[nel++] = -1;
+                }
+            }
+        }
+    }
+    //	void OutputContours( TESStesselator *tess, TESSmesh *mesh, int vertexSize )
+    outputContours_(mesh, vertexSize) {
+        let edge;
+        let start;
+        let startVert = 0;
+        let vertCount = 0;
+        this.vertexCount = 0;
+        this.elementCount = 0;
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
+            if (!f.inside) {
+                continue;
+            }
+            start = edge = f.anEdge;
+            do {
+                this.vertexCount++;
+                edge = edge.Lnext;
+            } while (edge !== start);
+            this.elementCount++;
+        }
+        /*		tess->elements = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
+                                                              sizeof(TESSindex) * tess->elementCount * 2 );
+            if (!tess->elements)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.elements = [];
+        this.elements.length = this.elementCount * 2;
+        /*		tess->vertices = (TESSreal*)tess->alloc.memalloc( tess->alloc.userData,
+                                                              sizeof(TESSreal) * tess->vertexCount * vertexSize );
+            if (!tess->vertices)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.vertices = [];
+        this.vertices.length = this.vertexCount * vertexSize;
+        /*		tess->vertexIndices = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
+                                                                    sizeof(TESSindex) * tess->vertexCount );
+            if (!tess->vertexIndices)
+            {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        this.vertexIndices = [];
+        this.vertexIndices.length = this.vertexCount;
+        let nv = 0;
+        let nvi = 0;
+        let nel = 0;
+        startVert = 0;
+        for (let f = mesh.fHead.next; f !== mesh.fHead; f = f.next) {
+            if (!f.inside) {
+                continue;
+            }
+            vertCount = 0;
+            start = edge = f.anEdge;
+            do {
+                this.vertices[nv++] = edge.Org.coords[0];
+                this.vertices[nv++] = edge.Org.coords[1];
+                if (vertexSize > 2)
+                    this.vertices[nv++] = edge.Org.coords[2];
+                this.vertexIndices[nvi++] = edge.Org.idx;
+                vertCount++;
+                edge = edge.Lnext;
+            } while (edge !== start);
+            this.elements[nel++] = startVert;
+            this.elements[nel++] = vertCount;
+            startVert += vertCount;
+        }
+    }
+    addContour(size, vertices) {
+        if (this.mesh === null) {
+            this.mesh = new TESSmesh();
+        }
+        /*	 	if ( tess->mesh == NULL ) {
+                tess->outOfMemory = 1;
+                return;
+            }*/
+        if (size < 2) {
+            size = 2;
+        }
+        if (size > 3) {
+            size = 3;
+        }
+        let e = null;
+        for (let i = 0; i < vertices.length; i += size) {
+            if (e === null) {
+                /* Make a self-loop (one vertex, one edge). */
+                e = this.mesh.makeEdge();
+                /*				if ( e == NULL ) {
+                        tess->outOfMemory = 1;
+                        return;
+                    }*/
+                this.mesh.splice(e, e.Sym);
+            }
+            else {
+                /* Create a new vertex and edge which immediately follow e
+                 * in the ordering around the left face.
+                 */
+                this.mesh.splitEdge(e);
+                e = e.Lnext;
+            }
+            /* The new vertex is now e->Org. */
+            e.Org.coords[0] = vertices[i + 0];
+            e.Org.coords[1] = vertices[i + 1];
+            if (size > 2) {
+                e.Org.coords[2] = vertices[i + 2];
+            }
+            else {
+                e.Org.coords[2] = 0.0;
+            }
+            /* Store the insertion number so that the vertex can be later recognized. */
+            e.Org.idx = this.vertexIndexCounter++;
+            /* The winding of an edge says how the winding number changes as we
+             * cross from the edge''s right face to its left face.  We add the
+             * vertices in such an order that a CCW contour will add +1 to
+             * the winding number of the region inside the contour.
+             */
+            e.winding = 1;
+            e.Sym.winding = -1;
+        }
+    }
+    //	int tessTesselate( TESStesselator *tess, int windingRule, int elementType, int polySize, int vertexSize, const TESSreal* normal )
+    tesselate(windingRule, elementType, polySize, vertexSize, normal) {
+        this.vertices = [];
+        this.elements = [];
+        this.vertexIndices = [];
+        this.vertexIndexCounter = 0;
+        if (normal) {
+            this.normal[0] = normal[0];
+            this.normal[1] = normal[1];
+            this.normal[2] = normal[2];
+        }
+        this.windingRule = windingRule;
+        if (vertexSize < 2) {
+            vertexSize = 2;
+        }
+        if (vertexSize > 3) {
+            vertexSize = 3;
+        }
+        /*		if (setjmp(tess->env) != 0) {
+                // come back here if out of memory
+                return 0;
+            }*/
+        if (!this.mesh) {
+            return false;
+        }
+        /* Determine the polygon normal and project vertices onto the plane
+         * of the polygon.
+         */
+        this.projectPolygon_();
+        /* tessComputeInterior( tess ) computes the planar arrangement specified
+         * by the given contours, and further subdivides this arrangement
+         * into regions.  Each region is marked "inside" if it belongs
+         * to the polygon, according to the rule given by tess->windingRule.
+         * Each interior region is guaranteed be monotone.
+         */
+        Sweep.computeInterior(this);
+        var mesh = this.mesh;
+        /* If the user wants only the boundary contours, we throw away all edges
+         * except those which separate the interior from the exterior.
+         * Otherwise we tessellate all the regions marked "inside".
+         */
+        if (elementType === MODE.BOUNDARY_CONTOURS) {
+            this.setWindingNumber_(mesh, 1, true);
+        }
+        else {
+            this.tessellateInterior_(mesh);
+        }
+        //		if (rc == 0) longjmp(tess->env,1);  /* could've used a label */
+        mesh.check();
+        if (elementType === MODE.BOUNDARY_CONTOURS) {
+            this.outputContours_(mesh, vertexSize); /* output contours */
+        }
+        else {
+            this.outputPolymesh_(mesh, elementType, polySize, vertexSize); /* output polygons */
+        }
+        //			tess.mesh = null;
+        return true;
+    }
+}
+
+/*
+ ** SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
+ ** Copyright (C) [dates of first publication] Silicon Graphics, Inc.
+ ** All Rights Reserved.
+ **
+ ** Permission is hereby granted, free of charge, to any person obtaining a copy
+ ** of this software and associated documentation files (the "Software"), to deal
+ ** in the Software without restriction, including without limitation the rights
+ ** to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ ** of the Software, and to permit persons to whom the Software is furnished to do so,
+ ** subject to the following conditions:
+ **
+ ** The above copyright notice including the dates of first publication and either this
+ ** permission notice or a reference to http://oss.sgi.com/projects/FreeB/ shall be
+ ** included in all copies or substantial portions of the Software.
+ **
+ ** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ ** INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ ** PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL SILICON GRAPHICS, INC.
+ ** BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ ** TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+ ** OR OTHER DEALINGS IN THE SOFTWARE.
+ **
+ ** Except as contained in this notice, the name of Silicon Graphics, Inc. shall not
+ ** be used in advertising or otherwise to promote the sale, use or other dealings in
+ ** this Software without prior written authorization from Silicon Graphics, Inc.
+ */
+function tesselate({ windingRule = WINDING.ODD, elementType = MODE.POLYGONS, polySize = 3, vertexSize = 2, normal = [0, 0, 1], contours = [], strict = false, debug = false, }) {
+    if (!contours && strict) {
+        throw new Error("Contours can't be empty");
+    }
+    if (!contours) {
+        return undefined;
+    }
+    const tess = new Tesselator();
+    for (let i = 0; i < contours.length; i++) {
+        tess.addContour(vertexSize || 2, contours[i]);
+    }
+    tess.tesselate(windingRule, elementType, polySize, vertexSize, normal);
+    return {
+        vertices: tess.vertices,
+        vertexIndices: tess.vertexIndices,
+        vertexCount: tess.vertexCount,
+        elements: tess.elements,
+        elementCount: tess.elementCount,
+        mesh: debug ? tess.mesh : undefined,
+    };
+}
+
+export { MODE, Tesselator, WINDING, tesselate };
 //# sourceMappingURL=tess2.es.js.map
