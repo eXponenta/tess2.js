@@ -1,9 +1,9 @@
 **DOESN'T WORKS CORRECTLY NOW**
-
+=
 Use original lib instead.
 
 tess2-ts
-========
+=
 
 Port of tess2.js to typescript
 
