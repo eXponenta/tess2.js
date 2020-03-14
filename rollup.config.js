@@ -1,11 +1,13 @@
 import cleanup from 'rollup-plugin-cleanup';
 import sourcemaps from 'rollup-plugin-sourcemaps';
+import typescript from 'rollup-plugin-typescript2';
 
 export default {
-    input: "./src/index.js",
+    input: "./src/index.ts",
     plugins: [
+        sourcemaps(),
         cleanup(),
-        sourcemaps()
+        typescript(),
     ],
     output: [
         {
