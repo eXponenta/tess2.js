@@ -174,87 +174,98 @@ class Geom {
 	}
 }
 
-function TESSvertex() {
-	this.next = null;
-	this.prev = null;
-	this.anEdge = null;
-	this.coords = [0, 0, 0];
-	this.s = 0.0;
-	this.t = 0.0;
-	this.pqHandle = 0;
-	this.n = 0;
-	this.idx = 0;
+class TESSface {
+    constructor() {
+        this.next = undefined; /* next face (never NULL) */
+        this.prev = undefined; /* previous face (never NULL) */
+        this.anEdge = undefined; /* a half edge with this left face */
+        /* Internal data (keep hidden) */
+        this.trail = null; /* "stack" for conversion to strips */
+        this.n = 0; /* to allow identiy unique faces */
+        this.marked = false; /* flag for conversion to strips */
+        this.inside = false; /* this face is in the polygon interior */
+    }
 }
-function TESSface() {
-	this.next = null;
-	this.prev = null;
-	this.anEdge = null;
-	this.trail = null;
-	this.n = 0;
-	this.marked = false;
-	this.inside = false;
+
+class TESShalfEdge {
+    constructor(side) {
+        this.side = side;
+        this.next = undefined; /* doubly-linked list (prev==Sym->next) */
+        this.Org = undefined; /* origin vertex (Overtex too long) */
+        this.Sym = undefined; /* same edge, opposite direction */
+        this.Onext = undefined; /* next edge CCW around origin */
+        this.Lnext = undefined; /* next edge CCW around left face */
+        this.Lface = undefined; /* left face */
+        /* Internal data (keep hidden) */
+        this.activeRegion = undefined; /* a region with this upper edge (sweep.c) */
+        this.winding = 0; /* change in winding number when crossing from the right face to the left face */
+    }
+    ;
+    get Rface() {
+        return this.Sym.Lface;
+    }
+    set Rface(v) {
+        this.Sym.Lface = v;
+    }
+    get Dst() {
+        return this.Sym.Org;
+    }
+    set Dst(v) {
+        this.Sym.Org = v;
+    }
+    get Oprev() {
+        return this.Sym.Lnext;
+    }
+    set Oprev(v) {
+        this.Sym.Lnext = v;
+    }
+    get Lprev() {
+        return this.Onext.Sym;
+    }
+    set Lprev(v) {
+        this.Onext.Sym = v;
+    }
+    get Dprev() {
+        return this.Lnext.Sym;
+    }
+    set Dprev(v) {
+        this.Lnext.Sym = v;
+    }
+    get Rprev() {
+        return this.Sym.Onext;
+    }
+    set Rprev(v) {
+        this.Sym.Onext = v;
+    }
+    get Dnext() {
+        return this.Sym.Onext.Sym;
+    }
+    set Dnext(v) {
+        this.Sym.Onext.Sym = v;
+    }
+    get Rnext() {
+        return this.Sym.Lnext.Sym;
+    }
+    set Rnext(v) {
+        this.Sym.Lnext.Sym = v;
+    }
 }
-function TESShalfEdge(side) {
-	this.next = null;
-	this.Sym = null;
-	this.Onext = null;
-	this.Lnext = null;
-	this.Org = null;
-	this.Lface = null;
-	this.activeRegion = null;
-	this.winding = 0;
-	this.side = side;
+
+class TESSvertex {
+    constructor() {
+        this.next = undefined; /* next vertex (never NULL) */
+        this.prev = undefined; /* previous vertex (never NULL) */
+        this.anEdge = undefined; /* a half-edge with this origin */
+        /* Internal data (keep hidden) */
+        this.coords = [0, 0, 0]; /* vertex location in 3D */
+        this.s = 0.0;
+        this.t = 0.0; /* projection onto the sweep plane */
+        this.pqHandle = 0; /* to allow deletion from priority queue */
+        this.n = 0; /* to allow identify unique vertices */
+        this.idx = 0; /* to allow map result to original verts */
+    }
 }
-TESShalfEdge.prototype = {
-	get Rface() {
-		return this.Sym.Lface;
-	},
-	set Rface(v) {
-		this.Sym.Lface = v;
-	},
-	get Dst() {
-		return this.Sym.Org;
-	},
-	set Dst(v) {
-		this.Sym.Org = v;
-	},
-	get Oprev() {
-		return this.Sym.Lnext;
-	},
-	set Oprev(v) {
-		this.Sym.Lnext = v;
-	},
-	get Lprev() {
-		return this.Onext.Sym;
-	},
-	set Lprev(v) {
-		this.Onext.Sym = v;
-	},
-	get Dprev() {
-		return this.Lnext.Sym;
-	},
-	set Dprev(v) {
-		this.Lnext.Sym = v;
-	},
-	get Rprev() {
-		return this.Sym.Onext;
-	},
-	set Rprev(v) {
-		this.Sym.Onext = v;
-	},
-	get Dnext() {
-		return  this.Sym.Onext.Sym;
-	} ,
-	set Dnext(v) {
-		 this.Sym.Onext.Sym = v;
-	} ,
-	get Rnext() {
-		return  this.Sym.Lnext.Sym;
-	} ,
-	set Rnext(v) {
-		 this.Sym.Lnext.Sym = v;
-	} ,
-};
+
 function TESSmesh() {
 	var v = new TESSvertex();
 	var f = new TESSface();
@@ -627,214 +638,246 @@ TESSmesh.prototype = {
 				e.Lface === null &&
 				e.Rface === null,
 		);
-	},
+	}
 };
-function DictNode() {
-	this.key = null;
-	this.next = null;
-	this.prev = null;
+
+class PQnode {
+    constructor() {
+        this.handle = null;
+    }
 }
-function Dict(frame, leq) {
-	this.head = new DictNode();
-	this.head.next = this.head;
-	this.head.prev = this.head;
-	this.frame = frame;
-	this.leq = leq;
+class PQhandleElem {
+    constructor() {
+        this.key = null;
+        this.node = 0;
+    }
 }
-Dict.prototype = {
-	min: function() {
-		return this.head.next;
-	},
-	max: function() {
-		return this.head.prev;
-	},
-	insert: function(k) {
-		return this.insertBefore(this.head, k);
-	},
-	search: function(key) {
-		var node = this.head;
-		do {
-			node = node.next;
-		} while (node.key !== null && !this.leq(this.frame, key, node.key));
-		return node;
-	},
-	insertBefore: function(node, key) {
-		do {
-			node = node.prev;
-		} while (node.key !== null && !this.leq(this.frame, node.key, key));
-		var newNode = new DictNode();
-		newNode.key = key;
-		newNode.next = node.next;
-		node.next.prev = newNode;
-		newNode.prev = node;
-		node.next = newNode;
-		return newNode;
-	},
-	delete: function(node) {
-		node.next.prev = node.prev;
-		node.prev.next = node.next;
-	},
-};
-function PQnode() {
-	this.handle = null;
+class PriorityQ {
+    constructor(size, leq) {
+        this.size = size;
+        this.leq = leq;
+        this.max = 0;
+        this.nodes = [];
+        this.handles = [];
+        this.initialized = false;
+        this.freeList = 0;
+        this.max = size;
+        this.nodes.length = size + 1;
+        this.handles.length = size + 1;
+        for (let i = 0; i < this.nodes.length; i++) {
+            this.nodes[i] = new PQnode();
+            this.handles[i] = new PQhandleElem();
+        }
+        this.nodes[1].handle = 1; /* so that Minimum() returns NULL */
+        this.handles[1].key = null;
+    }
+    floatDown_(curr) {
+        var n = this.nodes;
+        var h = this.handles;
+        var hCurr, hChild;
+        var child;
+        hCurr = n[curr].handle;
+        for (;;) {
+            child = curr << 1;
+            if (child < this.size &&
+                this.leq(h[n[child + 1].handle].key, h[n[child].handle].key)) {
+                ++child;
+            }
+            assert(child <= this.max);
+            hChild = n[child].handle;
+            if (child > this.size || this.leq(h[hCurr].key, h[hChild].key)) {
+                n[curr].handle = hCurr;
+                h[hCurr].node = curr;
+                break;
+            }
+            n[curr].handle = hChild;
+            h[hChild].node = curr;
+            curr = child;
+        }
+    }
+    floatUp_(curr) {
+        var n = this.nodes;
+        var h = this.handles;
+        var hCurr, hParent;
+        var parent;
+        hCurr = n[curr].handle;
+        for (;;) {
+            parent = curr >> 1;
+            hParent = n[parent].handle;
+            if (parent === 0 || this.leq(h[hParent].key, h[hCurr].key)) {
+                n[curr].handle = hCurr;
+                h[hCurr].node = curr;
+                break;
+            }
+            n[curr].handle = hParent;
+            h[hParent].node = curr;
+            curr = parent;
+        }
+    }
+    init() {
+        /* This method of building a heap is O(n), rather than O(n lg n). */
+        for (let i = this.size; i >= 1; --i) {
+            this.floatDown_(i);
+        }
+        this.initialized = true;
+    }
+    min() {
+        return this.handles[this.nodes[1].handle].key;
+    }
+    /* really pqHeapInsert */
+    /* returns INV_HANDLE iff out of memory */
+    //PQhandle pqHeapInsert( TESSalloc* alloc, PriorityQHeap *pq, PQkey keyNew )
+    insert(keyNew) {
+        var curr;
+        var free;
+        curr = ++this.size;
+        if (curr * 2 > this.max) {
+            this.max *= 2;
+            var i;
+            var s;
+            s = this.nodes.length;
+            this.nodes.length = this.max + 1;
+            for (i = s; i < this.nodes.length; i++)
+                this.nodes[i] = new PQnode();
+            s = this.handles.length;
+            this.handles.length = this.max + 1;
+            for (i = s; i < this.handles.length; i++)
+                this.handles[i] = new PQhandleElem();
+        }
+        if (this.freeList === 0) {
+            free = curr;
+        }
+        else {
+            free = this.freeList;
+            this.freeList = this.handles[free].node;
+        }
+        this.nodes[curr].handle = free;
+        this.handles[free].node = curr;
+        this.handles[free].key = keyNew;
+        if (this.initialized) {
+            this.floatUp_(curr);
+        }
+        return free;
+    }
+    //PQkey pqHeapExtractMin( PriorityQHeap *pq )
+    extractMin() {
+        var n = this.nodes;
+        var h = this.handles;
+        var hMin = n[1].handle;
+        var min = h[hMin].key;
+        if (this.size > 0) {
+            n[1].handle = n[this.size].handle;
+            h[n[1].handle].node = 1;
+            h[hMin].key = null;
+            h[hMin].node = this.freeList;
+            this.freeList = hMin;
+            --this.size;
+            if (this.size > 0) {
+                this.floatDown_(1);
+            }
+        }
+        return min;
+    }
+    delete(hCurr) {
+        var n = this.nodes;
+        var h = this.handles;
+        var curr;
+        assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key !== null);
+        curr = h[hCurr].node;
+        n[curr].handle = n[this.size].handle;
+        h[n[curr].handle].node = curr;
+        --this.size;
+        if (curr <= this.size) {
+            if (curr <= 1 ||
+                this.leq(h[n[curr >> 1].handle].key, h[n[curr].handle].key)) {
+                this.floatDown_(curr);
+            }
+            else {
+                this.floatUp_(curr);
+            }
+        }
+        h[hCurr].key = null;
+        h[hCurr].node = this.freeList;
+        this.freeList = hCurr;
+    }
 }
-function PQhandleElem() {
-	this.key = null;
-	this.node = null;
+
+/* For each pair of adjacent edges crossing the sweep line, there is
+ * an ActiveRegion to represent the region between them.  The active
+ * regions are kept in sorted order in a dynamic dictionary.  As the
+ * sweep line crosses each vertex, we update the affected regions.
+ */
+class ActiveRegion {
+    constructor() {
+        this.eUp = undefined; /* upper edge, directed right to left */
+        this.nodeUp = null; /* dictionary node corresponding to eUp */
+        this.windingNumber = 0;
+        /* used to determine which regions are
+         * inside the polygon */
+        this.inside = false; /* is this region inside the polygon? */
+        this.sentinel = false; /* marks fake edges at t = +/-infinity */
+        this.dirty = false;
+        /* marks regions where the upper or lower
+         * edge has changed, but we haven't checked
+         * whether they intersect yet */
+        this.fixUpperEdge = false;
+        /* marks temporary edges introduced when
+         * we process a "right vertex" (one without
+         * any edges leaving to the right) */
+    }
 }
-function PriorityQ(size, leq) {
-	this.size = 0;
-	this.max = size;
-	this.nodes = [];
-	this.nodes.length = size + 1;
-	var i;
-	for (i = 0; i < this.nodes.length; i++) this.nodes[i] = new PQnode();
-	this.handles = [];
-	this.handles.length = size + 1;
-	for (i = 0; i < this.handles.length; i++)
-		this.handles[i] = new PQhandleElem();
-	this.initialized = false;
-	this.freeList = 0;
-	this.leq = leq;
-	this.nodes[1].handle = 1;
-	this.handles[1].key = null;
+
+class DictNode {
+    constructor() {
+        this.key = null;
+        this.next = null;
+        this.prev = null;
+    }
 }
-PriorityQ.prototype = {
-	floatDown_: function(curr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var hCurr, hChild;
-		var child;
-		hCurr = n[curr].handle;
-		for (;;) {
-			child = curr << 1;
-			if (
-				child < this.size &&
-				this.leq(h[n[child + 1].handle].key, h[n[child].handle].key)
-			) {
-				++child;
-			}
-			assert(child <= this.max);
-			hChild = n[child].handle;
-			if (child > this.size || this.leq(h[hCurr].key, h[hChild].key)) {
-				n[curr].handle = hCurr;
-				h[hCurr].node = curr;
-				break;
-			}
-			n[curr].handle = hChild;
-			h[hChild].node = curr;
-			curr = child;
-		}
-	},
-	floatUp_: function(curr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var hCurr, hParent;
-		var parent;
-		hCurr = n[curr].handle;
-		for (;;) {
-			parent = curr >> 1;
-			hParent = n[parent].handle;
-			if (parent === 0 || this.leq(h[hParent].key, h[hCurr].key)) {
-				n[curr].handle = hCurr;
-				h[hCurr].node = curr;
-				break;
-			}
-			n[curr].handle = hParent;
-			h[hParent].node = curr;
-			curr = parent;
-		}
-	},
-	init: function() {
-		for (var i = this.size; i >= 1; --i) {
-			this.floatDown_(i);
-		}
-		this.initialized = true;
-	},
-	min: function() {
-		return this.handles[this.nodes[1].handle].key;
-	},
-	insert: function(keyNew) {
-		var curr;
-		var free;
-		curr = ++this.size;
-		if (curr * 2 > this.max) {
-			this.max *= 2;
-			var i;
-			var s;
-			s = this.nodes.length;
-			this.nodes.length = this.max + 1;
-			for (i = s; i < this.nodes.length; i++)
-				this.nodes[i] = new PQnode();
-			s = this.handles.length;
-			this.handles.length = this.max + 1;
-			for (i = s; i < this.handles.length; i++)
-				this.handles[i] = new PQhandleElem();
-		}
-		if (this.freeList === 0) {
-			free = curr;
-		} else {
-			free = this.freeList;
-			this.freeList = this.handles[free].node;
-		}
-		this.nodes[curr].handle = free;
-		this.handles[free].node = curr;
-		this.handles[free].key = keyNew;
-		if (this.initialized) {
-			this.floatUp_(curr);
-		}
-		return free;
-	},
-	extractMin: function() {
-		var n = this.nodes;
-		var h = this.handles;
-		var hMin = n[1].handle;
-		var min = h[hMin].key;
-		if (this.size > 0) {
-			n[1].handle = n[this.size].handle;
-			h[n[1].handle].node = 1;
-			h[hMin].key = null;
-			h[hMin].node = this.freeList;
-			this.freeList = hMin;
-			--this.size;
-			if (this.size > 0) {
-				this.floatDown_(1);
-			}
-		}
-		return min;
-	},
-	delete: function(hCurr) {
-		var n = this.nodes;
-		var h = this.handles;
-		var curr;
-		assert(hCurr >= 1 && hCurr <= this.max && h[hCurr].key !== null);
-		curr = h[hCurr].node;
-		n[curr].handle = n[this.size].handle;
-		h[n[curr].handle].node = curr;
-		--this.size;
-		if (curr <= this.size) {
-			if (
-				curr <= 1 ||
-				this.leq(h[n[curr >> 1].handle].key, h[n[curr].handle].key)
-			) {
-				this.floatDown_(curr);
-			} else {
-				this.floatUp_(curr);
-			}
-		}
-		h[hCurr].key = null;
-		h[hCurr].node = this.freeList;
-		this.freeList = hCurr;
-	},
-};
-function ActiveRegion() {
-	this.eUp = null;
-	this.nodeUp = null;
-	this.windingNumber = 0;
-	this.inside = false;
-	this.sentinel = false;
-	this.dirty = false;
-	this.fixUpperEdge = false;
+class Dict {
+    constructor(frame, leq) {
+        this.frame = frame;
+        this.leq = leq;
+        this.head = new DictNode();
+        this.head.next = this.head;
+        this.head.prev = this.head;
+    }
+    min() {
+        return this.head.next;
+    }
+    max() {
+        return this.head.prev;
+    }
+    insert(k) {
+        return this.insertBefore(this.head, k);
+    }
+    search(key) {
+        /* Search returns the node with the smallest key greater than or equal
+         * to the given key.  If there is no such key, returns a node whose
+         * key is NULL.  Similarly, Succ(Max(d)) has a NULL key, etc.
+         */
+        let node = this.head;
+        do {
+            node = node.next;
+        } while (node.key !== null && !this.leq(this.frame, key, node.key));
+        return node;
+    }
+    insertBefore(node, key) {
+        do {
+            node = node.prev;
+        } while (node.key !== null && !this.leq(this.frame, node.key, key));
+        const newNode = new DictNode();
+        newNode.key = key;
+        newNode.next = node.next;
+        node.next.prev = newNode;
+        newNode.prev = node;
+        node.next = newNode;
+        return newNode;
+    }
+    delete(node) {
+        node.next.prev = node.prev;
+        node.prev.next = node.next;
+    }
 }
 
 class Sweep {
@@ -1995,8 +2038,9 @@ class Tesselator {
                 var idx = v.n * vertexSize;
                 this.vertices[idx + 0] = v.coords[0];
                 this.vertices[idx + 1] = v.coords[1];
-                if (vertexSize > 2)
+                if (vertexSize > 2) {
                     this.vertices[idx + 2] = v.coords[2];
+                }
                 // Store vertex index.
                 this.vertexIndices[v.n] = v.idx;
             }

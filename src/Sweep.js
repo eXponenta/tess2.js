@@ -1,7 +1,10 @@
 import { Geom } from "./Geom";
 import { assert } from "./assert";
-import { PriorityQ, Dict, ActiveRegion, TESSvertex} from "./tess2";
+import { PriorityQ } from "./PriorityQ";
 import { WINDING, MODE } from "./constants";
+import { ActiveRegion } from "./units";
+import { TESSvertex } from "./units";
+import {Dict} from "./Dict";
 
 export class Sweep {
 	static regionBelow(r) {

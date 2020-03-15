@@ -1,8 +1,9 @@
 import { WINDING, MODE } from './constants';
-import { TESSmesh } from './tess2';
+import { TESSmesh } from './units/TESSmesh';
 import { Geom } from "./Geom";
 import { Sweep } from "./Sweep";
 import { V3, V2 } from './type';
+import { TESShalfEdge } from './units/TESShalfEdge';
 
 type TESSface = any;
 //type TESSmesh = any;
@@ -32,7 +33,7 @@ export class Tesselator {
 
 	vertexIndexCounter: number = 0;
 
-	vertices: Array<V3> = [];
+	vertices: Array<number> = [];
 	vertexIndices: Array<number> = [];
 	vertexCount: number = 0;
 	elements: Array<number> = [];
@@ -79,8 +80,8 @@ export class Tesselator {
 			d2: V3 = [0, 0, 0],
 			tNorm: V3 = [0, 0, 0];
 
-		const maxVert = [null, null, null],
-			minVert = [null, null, null];
+		const maxVert:Array<any> = [null, null, null],
+			minVert:Array<any> = [null, null, null];
 		const vHead = this.mesh.vHead;
 
 		v = vHead.next;
@@ -175,18 +176,18 @@ export class Tesselator {
 		 */
 		let area = 0;
 
-		for (let f = fHead.next; f !== fHead; f = f.next) {
-			e = f.anEdge;
+		for (let f = fHead.next!; f !== fHead; f = f.next!) {
+			e = f.anEdge!;
 			if (e.winding <= 0) continue;
 			do {
-				area += (e.Org.s - e.Dst.s) * (e.Org.t + e.Dst.t);
-				e = e.Lnext;
+				area += (e!.Org!.s! - e!.Dst!.s!) * (e!.Org!.t + e!.Dst!.t!);
+				e = e!.Lnext!;
 			} while (e !== f.anEdge);
 		}
 
 		if (area < 0) {
 			/* Reverse the orientation by flipping all the t-coordinates */
-			for (v = vHead.next; v !== vHead; v = v.next) {
+			for (v = vHead.next!; v !== vHead; v = v!.next!) {
 				v.t = -v.t;
 			}
 			this.tUnit[0] = -this.tUnit[0];
@@ -277,7 +278,7 @@ export class Tesselator {
 		//	#endif
 
 		/* Project the vertices onto the sweep plane */
-		for (let v = vHead.next; v !== vHead; v = v.next) {
+		for (let v = vHead.next!; v !== vHead; v = v!.next!) {
 			v.s = this.dot_(v.coords, sUnit);
 			v.t = this.dot_(v.coords, tUnit);
 		}
@@ -289,17 +290,17 @@ export class Tesselator {
 		/* Compute ST bounds. */
 		let first = true;
 
-		for (let v = vHead.next; v !== vHead; v = v.next) {
+		for (let v = vHead.next; v !== vHead; v = v!.next!) {
 			if (first) {
-				this.bmin[0] = this.bmax[0] = v.s;
-				this.bmin[1] = this.bmax[1] = v.t;
+				this.bmin[0] = this.bmax[0] = v!.s;
+				this.bmin[1] = this.bmax[1] = v!.t;
 
 				first = false;
 			} else {
-				if (v.s < this.bmin[0]) this.bmin[0] = v.s;
-				if (v.s > this.bmax[0]) this.bmax[0] = v.s;
-				if (v.t < this.bmin[1]) this.bmin[1] = v.t;
-				if (v.t > this.bmax[1]) this.bmax[1] = v.t;
+				if (v!.s! < this.bmin[0]) this.bmin[0] = v!.s;
+				if (v!.s! > this.bmax[0]) this.bmax[0] = v!.s;
+				if (v!.t! < this.bmin[1]) this.bmin[1] = v!.t;
+				if (v!.t! > this.bmax[1]) this.bmax[1] = v!.t;
 			}
 		}
 	}
@@ -416,8 +417,8 @@ export class Tesselator {
 		/*LINTED*/
 		for (let f = mesh.fHead.next; f !== mesh.fHead; f = next) {
 			/* Make sure we don''t try to tessellate the new triangles. */
-			next = f.next;
-			if (f.inside) {
+			next = f!.next!;
+			if (f!.inside) {
 				if (!this.tessellateMonoRegion_(mesh, f)) {
 					return false;
 				}
@@ -439,9 +440,9 @@ export class Tesselator {
 		/*LINTED*/
 		for (let f = mesh.fHead.next; f !== mesh.fHead; f = next) {
 			/* Since f will be destroyed, save its next pointer. */
-			next = f.next;
+			next = f!.next;
 
-			if (!f.inside) {
+			if (!f!.inside) {
 				mesh.zapFace(f);
 			}
 		}
@@ -460,7 +461,7 @@ export class Tesselator {
 		let eNext;
 
 		for (let e = mesh.eHead.next; e !== mesh.eHead; e = eNext) {
-			eNext = e.next;
+			eNext = e!.next;
 			if (e.Rface.inside !== e.Lface.inside) {
 				/* This is a boundary edge (one side is interior, one is exterior). */
 				e.winding = e.Lface.inside ? value : -value;
@@ -568,7 +569,10 @@ export class Tesselator {
 				var idx = v.n * vertexSize;
 				this.vertices[idx + 0] = v.coords[0];
 				this.vertices[idx + 1] = v.coords[1];
-				if (vertexSize > 2) this.vertices[idx + 2] = v.coords[2];
+				
+				if (vertexSize > 2) {
+					this.vertices[idx + 2] = v.coords[2];
+				}
 				// Store vertex index.
 				this.vertexIndices[v.n] = v.idx;
 			}
@@ -712,7 +716,7 @@ export class Tesselator {
 			size = 3;
 		}
 
-		let e = null;
+		let e: TESShalfEdge = null;
 
 		for (let i = 0; i < vertices.length; i += size) {
 			if (e === null) {
@@ -728,7 +732,7 @@ export class Tesselator {
 				 * in the ordering around the left face.
 				 */
 				this.mesh.splitEdge(e);
-				e = e.Lnext;
+				e = e!.Lnext!;
 			}
 
 			/* The new vertex is now e->Org. */

@@ -48,7 +48,7 @@ export interface IOptions {
 }
 
 export interface IResult {
-	vertices: Array<V3>,
+	vertices: Array<number>,
 	vertexIndices: Array<number>,
 	vertexCount: number,
 	elements: Array<number>,
