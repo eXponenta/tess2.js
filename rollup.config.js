@@ -5,7 +5,9 @@ export default {
     input: "./src/index.ts",
     plugins: [
         //sourcemaps(),
-        typescript(),
+        typescript({
+            useTsconfigDeclarationDir: true
+        }),
     ],
     output: [
         {

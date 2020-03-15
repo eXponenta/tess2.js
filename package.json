@@ -1,6 +1,6 @@
 {
   "name": "tess2-ts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "GLU tesselator ported to Javascript, performs polygon boolean operations and triangulation",
   "module": "./dist/tess2.es.js",
   "main": "./dist/tess2.js",
@@ -30,6 +30,7 @@
   "bugs": {
     "url": "https://github.com/memononen/tess2.js/issues"
   },
+  "types": "./types",
   "homepage": "https://github.com/memononen/tess2.js",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.0.0",

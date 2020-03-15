@@ -1,6 +1,3 @@
-**DOESN'T WORKS CORRECTLY NOW**
-=
-Use original lib instead.
 
 tess2-ts
 =
@@ -9,12 +6,28 @@ Port of tess2.js to typescript
 
 The tess2.js library performs polygon boolean operations and tesselation to triangles and convex polygons. It is a port of libtess2, which is turn is a cleaned up version of the stock GLU tesselator. The original code was written Eric Veach in 1994. The greatest thing about tess2.js is that it handles all kinds of input like self-intersecting polygons or any nomber of holes and contours.
 
+Differences from tess2.js
+-
+
+* Typescript
+* Include types
+* es6
+* Many errors has clear description
+* Allowed to disable validation passed to increase performance
+* Direct accces to Tesselator class
+
+
+---
+
 Installation:
-```npm install tess2 --save```
+-
+
+```npm install tess2-ts --save```
 
 Example use:
 ```javascript
-var Tess2 = require('tess2');
+
+import {tesselate, WINDING, ELEMENT } from 'tess2-ts';
 
 // Define input
 var ca = [0,0, 10,0, 5,10];
@@ -22,12 +35,13 @@ var cb = [0,2, 10,2, 10,6, 0,6];
 var contours = [ca,cb];
 
 // Tesselate
-var res = Tess2.tesselate({
+var res = tesselate({
 	contours: contours,
-	windingRule: Tess2.WINDING_ODD,
-	elementType: Tess2.POLYGONS,
-	polySize: 3,
-	vertexSize: 2
+	windingRule: WINDING.ODD, // default
+	elementType: ELEMENT.POLYGONS, // default
+	polySize: 3, // default
+	vertexSize: 2 // default
+	strict: true // default, enable mesh validation 
 });
 
 // Use vertices
@@ -46,9 +60,9 @@ for (var i = 0; i < res.elements.length; i += 3) {
 Further reading:
 http://www.glprogramming.com/red/chapter11.html
 
-## Browser / AMD / etc
- 
-The `build/tess2.js` works with RequireJS, CommonJS, or "no-module" patterns, like a simple script tag:
+## Browser
+
+like a simple script tag:
 
 ```html
 <script src="tess2.js"></script>
@@ -61,6 +75,9 @@ var res = Tess2.tesselate({ ... });
 
 ## Building
 
-To build the UMD file, enter the following:
+To build, enter the following:
 
-```npm run build```
+```
+npm i
+npm run build
+```

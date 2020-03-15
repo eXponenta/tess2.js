@@ -1,0 +1,32 @@
+import { ActiveRegion } from './ActiveRegion';
+import { TESSface } from './TESSface';
+declare type TESSVertex = any;
+export declare class TESShalfEdge {
+    side: number;
+    next: TESShalfEdge;
+    Org: TESSVertex;
+    Sym: TESShalfEdge;
+    Onext: TESShalfEdge;
+    Lnext: TESShalfEdge;
+    Lface: TESSface;
+    activeRegion: ActiveRegion;
+    winding: number;
+    constructor(side: number);
+    get Rface(): TESSface;
+    set Rface(v: TESSface);
+    get Dst(): any;
+    set Dst(v: any);
+    get Oprev(): TESShalfEdge;
+    set Oprev(v: TESShalfEdge);
+    get Lprev(): TESShalfEdge;
+    set Lprev(v: TESShalfEdge);
+    get Dprev(): TESShalfEdge;
+    set Dprev(v: TESShalfEdge);
+    get Rprev(): TESShalfEdge;
+    set Rprev(v: TESShalfEdge);
+    get Dnext(): TESShalfEdge;
+    set Dnext(v: TESShalfEdge);
+    get Rnext(): TESShalfEdge;
+    set Rnext(v: TESShalfEdge);
+}
+export {};

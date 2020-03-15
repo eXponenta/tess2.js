@@ -7,11 +7,12 @@
 		"strictNullChecks": false /* Enable strict null checks. */,
 		"noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
 		"esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
-		"allowJs": true,
 		"forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */,
 		"outDir": "./dist",
 		"removeComments": true,
 		"preserveConstEnums": true,
-		"sourceMap": true
+		"sourceMap": true,
+		"declaration": true,
+		"declarationDir": "./types"
 	}
 }
