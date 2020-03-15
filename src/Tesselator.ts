@@ -840,7 +840,7 @@ export class Tesselator {
 		}
 		//		if (rc == 0) longjmp(tess->env,1);  /* could've used a label */
 
-		if(!validate){
+		if(validate){
 			 mesh.check();
 		}
 

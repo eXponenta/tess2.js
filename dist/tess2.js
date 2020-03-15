@@ -1960,7 +1960,7 @@ var Tess2 = (function (exports) {
 	        else {
 	            this.tessellateInterior_(mesh);
 	        }
-	        if (!validate) {
+	        if (validate) {
 	            mesh.check();
 	        }
 	        if (elementType === exports.ELEMENT.BOUNDARY_CONTOURS) {

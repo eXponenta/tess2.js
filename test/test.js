@@ -126,7 +126,7 @@ function triangulate() {
 	var yscale = (ctx.canvas.height * 0.8) / (bounds[3] - bounds[1]);
 	scale = Math.min(xscale, yscale);
 
-	var t0 = window.performance.now();
+
 
 	switch($("#winding_rule option:selected").attr("value")) {
 		case 'odd': windingRule = Tess2.WINDING_ODD; break;
@@ -150,12 +150,21 @@ function triangulate() {
 		case '16': polygonSize = 16; break;
 	}
 
+	const validate = $("#validate").attr("checked");
+	
+	if(!validate) {
+		console.warn("Validation disabled!");
+	}
+
+	var t0 = window.performance.now();
+
 	tess = Tess2.tesselate({
 		contours: contours,
 		windingRule: windingRule, //Tess2.WINDING_ODD,
 		elementType: elementType, //Tess2.POLYGONS,
 		polySize: polygonSize, //3,
-		vertexSize: 2
+		vertexSize: 2,
+		strict: validate
 	});
 
 	var t1 = window.performance.now();

@@ -1959,7 +1959,7 @@ class Tesselator {
         else {
             this.tessellateInterior_(mesh);
         }
-        if (!validate) {
+        if (validate) {
             mesh.check();
         }
         if (elementType === ELEMENT.BOUNDARY_CONTOURS) {
