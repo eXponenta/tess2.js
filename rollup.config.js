@@ -25,11 +25,7 @@ export default {
             file: "./dist/tess2.min.js",
             format:"iife",
             name: "Tess2",
-            plugins: [terser({
-                mangle: {
-                    properties: true
-                }
-            })]
+            plugins: [terser({})]
         },
         
     ]

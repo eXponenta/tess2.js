@@ -20,8 +20,13 @@ export class PriorityQ {
 	constructor(size: number, public leq: (...args: any) => boolean) {
 	
 		this.max = size;
-		this.nodes = Array.from({length : size + 1}, () => new PQnode() );
-		this.handles = Array.from({length : size + 1}, () => new PQhandleElem() );
+		this.nodes = [];
+		this.handles = [];
+		
+		for(let i = 0; i < size + 1; i ++) {
+			this.nodes[i] = new PQnode();
+			this.handles[i] = new PQhandleElem();
+		}
 
 		this.initialized = false;
 		

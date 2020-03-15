@@ -644,8 +644,12 @@ class PriorityQ {
         this.freeList = 0;
         this.size = 0;
         this.max = size;
-        this.nodes = Array.from({ length: size + 1 }, () => new PQnode());
-        this.handles = Array.from({ length: size + 1 }, () => new PQhandleElem());
+        this.nodes = [];
+        this.handles = [];
+        for (let i = 0; i < size + 1; i++) {
+            this.nodes[i] = new PQnode();
+            this.handles[i] = new PQhandleElem();
+        }
         this.initialized = false;
         this.nodes[1].handle = 1;
         this.handles[1].key = null;
