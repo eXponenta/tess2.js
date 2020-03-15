@@ -55,7 +55,7 @@ export interface IResult {
 	mesh: any;
 }
 
-export { Tesselator, WINDING, ELEMENT as MODE };
+export { Tesselator, WINDING, ELEMENT };
 
 export function tesselate({
 	windingRule = WINDING.ODD,
@@ -99,3 +99,16 @@ export function tesselate({
 		mesh: debug ? tess.mesh : undefined,
 	};
 }
+
+// legacy, compatibility exports
+
+
+export const WINDING_ODD = WINDING.ODD;
+export const WINDING_NONZERO = WINDING.NONZERO;
+export const WINDING_POSITIVE = WINDING.POSITIVE;
+export const WINDING_NEGATIVE = WINDING.NEGATIVE;
+export const WINDING_ABS_GEQ_TWO = WINDING.ABS_GEQ_TWO;
+
+export const POLYGONS = ELEMENT.POLYGONS;
+export const CONNECTED_POLYGONS = ELEMENT.CONNECTED_POLYGONS;
+export const BOUNDARY_CONTOURS = ELEMENT.BOUNDARY_CONTOURS;

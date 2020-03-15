@@ -12,7 +12,7 @@ var Tess2 = (function (exports) {
 	    ELEMENT[ELEMENT["POLYGONS"] = 0] = "POLYGONS";
 	    ELEMENT[ELEMENT["CONNECTED_POLYGONS"] = 1] = "CONNECTED_POLYGONS";
 	    ELEMENT[ELEMENT["BOUNDARY_CONTOURS"] = 2] = "BOUNDARY_CONTOURS";
-	})(exports.MODE || (exports.MODE = {}));
+	})(exports.ELEMENT || (exports.ELEMENT = {}));
 
 	function assert(cond, message = undefined) {
 	    if (!cond) {
@@ -1801,7 +1801,7 @@ var Tess2 = (function (exports) {
 	            ++maxFaceCount;
 	        }
 	        this.elementCount = maxFaceCount;
-	        if (elementType === exports.MODE.CONNECTED_POLYGONS) {
+	        if (elementType === exports.ELEMENT.CONNECTED_POLYGONS) {
 	            maxFaceCount *= 2;
 	        }
 	        this.elements = [];
@@ -1837,7 +1837,7 @@ var Tess2 = (function (exports) {
 	            for (let i = faceVerts; i < polySize; ++i) {
 	                this.elements[nel++] = -1;
 	            }
-	            if (elementType === exports.MODE.CONNECTED_POLYGONS) {
+	            if (elementType === exports.ELEMENT.CONNECTED_POLYGONS) {
 	                edge = f.anEdge;
 	                do {
 	                    this.elements[nel++] = this.getNeighbourFace_(edge);
@@ -1931,7 +1931,7 @@ var Tess2 = (function (exports) {
 	            e.Sym.winding = -1;
 	        }
 	    }
-	    tesselate(windingRule = exports.WINDING.ODD, elementType = exports.MODE.POLYGONS, polySize, vertexSize, normal, validate = true) {
+	    tesselate(windingRule = exports.WINDING.ODD, elementType = exports.ELEMENT.POLYGONS, polySize, vertexSize, normal, validate = true) {
 	        this.vertices = [];
 	        this.elements = [];
 	        this.vertexIndices = [];
@@ -1954,7 +1954,7 @@ var Tess2 = (function (exports) {
 	        this.projectPolygon_();
 	        Sweep.computeInterior(this, validate);
 	        var mesh = this.mesh;
-	        if (elementType === exports.MODE.BOUNDARY_CONTOURS) {
+	        if (elementType === exports.ELEMENT.BOUNDARY_CONTOURS) {
 	            this.setWindingNumber_(mesh, 1, true);
 	        }
 	        else {
@@ -1963,7 +1963,7 @@ var Tess2 = (function (exports) {
 	        if (!validate) {
 	            mesh.check();
 	        }
-	        if (elementType === exports.MODE.BOUNDARY_CONTOURS) {
+	        if (elementType === exports.ELEMENT.BOUNDARY_CONTOURS) {
 	            this.outputContours_(mesh, vertexSize);
 	        }
 	        else {
@@ -1973,7 +1973,7 @@ var Tess2 = (function (exports) {
 	    }
 	}
 
-	function tesselate({ windingRule = exports.WINDING.ODD, elementType = exports.MODE.POLYGONS, polySize = 3, vertexSize = 2, normal = [0, 0, 1], contours = [], strict = true, debug = false, }) {
+	function tesselate({ windingRule = exports.WINDING.ODD, elementType = exports.ELEMENT.POLYGONS, polySize = 3, vertexSize = 2, normal = [0, 0, 1], contours = [], strict = true, debug = false, }) {
 	    if (!contours && strict) {
 	        throw new Error("Contours can't be empty");
 	    }
@@ -1994,8 +1994,24 @@ var Tess2 = (function (exports) {
 	        mesh: debug ? tess.mesh : undefined,
 	    };
 	}
+	const WINDING_ODD = exports.WINDING.ODD;
+	const WINDING_NONZERO = exports.WINDING.NONZERO;
+	const WINDING_POSITIVE = exports.WINDING.POSITIVE;
+	const WINDING_NEGATIVE = exports.WINDING.NEGATIVE;
+	const WINDING_ABS_GEQ_TWO = exports.WINDING.ABS_GEQ_TWO;
+	const POLYGONS = exports.ELEMENT.POLYGONS;
+	const CONNECTED_POLYGONS = exports.ELEMENT.CONNECTED_POLYGONS;
+	const BOUNDARY_CONTOURS = exports.ELEMENT.BOUNDARY_CONTOURS;
 
+	exports.BOUNDARY_CONTOURS = BOUNDARY_CONTOURS;
+	exports.CONNECTED_POLYGONS = CONNECTED_POLYGONS;
+	exports.POLYGONS = POLYGONS;
 	exports.Tesselator = Tesselator;
+	exports.WINDING_ABS_GEQ_TWO = WINDING_ABS_GEQ_TWO;
+	exports.WINDING_NEGATIVE = WINDING_NEGATIVE;
+	exports.WINDING_NONZERO = WINDING_NONZERO;
+	exports.WINDING_ODD = WINDING_ODD;
+	exports.WINDING_POSITIVE = WINDING_POSITIVE;
 	exports.tesselate = tesselate;
 
 	return exports;
