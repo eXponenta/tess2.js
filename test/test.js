@@ -156,16 +156,19 @@ function triangulate() {
 		console.warn("Validation disabled!");
 	}
 
+	const passes = Number($("#test_passes option:selected").attr("value")) || 1;
 	var t0 = window.performance.now();
 
-	tess = Tess2.tesselate({
-		contours: contours,
-		windingRule: windingRule, //Tess2.WINDING_ODD,
-		elementType: elementType, //Tess2.POLYGONS,
-		polySize: polygonSize, //3,
-		vertexSize: 2,
-		strict: validate
-	});
+	for(let i = 0; i < passes; i ++){
+		tess = Tess2.tesselate({
+			contours: contours,
+			windingRule: windingRule, //Tess2.WINDING_ODD,
+			elementType: elementType, //Tess2.POLYGONS,
+			polySize: polygonSize, //3,
+			vertexSize: 2,
+			strict: validate
+		});
+	}
 
 	var t1 = window.performance.now();
 
