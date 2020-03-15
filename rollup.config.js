@@ -1,13 +1,11 @@
-import cleanup from 'rollup-plugin-cleanup';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
+import { terser } from "rollup-plugin-terser";
 
 export default {
     input: "./src/index.ts",
     plugins: [
         //sourcemaps(),
         typescript(),
-        cleanup(),
     ],
     output: [
         {
@@ -20,6 +18,17 @@ export default {
             format:"iife",
             name: "Tess2",
             sourcemap: true,
-        }
+        },
+        {
+            file: "./dist/tess2.min.js",
+            format:"iife",
+            name: "Tess2",
+            plugins: [terser({
+                mangle: {
+                    properties: true
+                }
+            })]
+        },
+        
     ]
 }

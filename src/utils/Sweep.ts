@@ -1,21 +1,26 @@
 import { Geom } from "./Geom";
-import { assert } from "./assert";
+import { assert } from "./../utils/assert";
 import { PriorityQ } from "./PriorityQ";
-import { WINDING, MODE } from "./constants";
-import { ActiveRegion } from "./units";
-import { TESSvertex } from "./units";
-import {Dict} from "./Dict";
+import { WINDING, ELEMENT } from "./constants";
+import { ActiveRegion} from "./../mesh/ActiveRegion";
+import { TESSvertex } from "./../mesh/TESSvertex";
+
+import { Dict } from "./Dict";
+import { TESSmesh } from "../mesh/TESSmesh";
+import { TESSface, TESShalfEdge } from "../mesh/index";
+import { Tesselator } from "../index";
 
 export class Sweep {
-	static regionBelow(r) {
+
+	static regionBelow(r: ActiveRegion) {
 		return r.nodeUp.prev.key;
 	}
 
-	static regionAbove(r) {
+	static regionAbove(r: ActiveRegion) {
 		return r.nodeUp.next.key;
 	}
 
-	static debugEvent(tess) {
+	static debugEvent(tess: any) {
 		// empty
 	}
 
@@ -52,13 +57,13 @@ export class Sweep {
 	/* When we merge two edges into one, we need to compute the combined
 	 * winding of the new edge.
 	 */
-	static addWinding(eDst, eSrc) {
+	static addWinding(eDst: TESShalfEdge, eSrc: TESShalfEdge) {
 		eDst.winding += eSrc.winding;
 		eDst.Sym.winding += eSrc.Sym.winding;
 	}
 
 	//static int EdgeLeq( TESStesselator *tess, ActiveRegion *reg1, ActiveRegion *reg2 )
-	static edgeLeq(tess, reg1, reg2) {
+	static edgeLeq(tess: Tesselator, reg1: ActiveRegion, reg2: ActiveRegion) {
 		/*
 		 * Both edges must be directed from right to left (this is the canonical
 		 * direction for the upper edge of each region).
@@ -71,8 +76,7 @@ export class Sweep {
 		 * we sort the edges by slope (they would otherwise compare equally).
 		 */
 		var ev = tess.event;
-		var t1, t2;
-
+		
 		var e1 = reg1.eUp;
 		var e2 = reg2.eUp;
 
@@ -93,13 +97,13 @@ export class Sweep {
 		}
 
 		/* General case - compute signed distance *from* e1, e2 to event */
-		var t1 = Geom.edgeEval(e1.Dst, ev, e1.Org);
-		var t2 = Geom.edgeEval(e2.Dst, ev, e2.Org);
+		const t1 = Geom.edgeEval(e1.Dst, ev, e1.Org);
+		const t2 = Geom.edgeEval(e2.Dst, ev, e2.Org);
 		return t1 >= t2;
 	}
 
 	//static void DeleteRegion( TESStesselator *tess, ActiveRegion *reg )
-	static deleteRegion(tess, reg) {
+	static deleteRegion(tess: Tesselator, reg: ActiveRegion) {
 		if (reg.fixUpperEdge) {
 			/* It was created with zero winding number, so it better be
 			 * deleted with zero winding number (ie. it better not get merged
@@ -112,7 +116,7 @@ export class Sweep {
 	}
 
 	//static int FixUpperEdge( TESStesselator *tess, ActiveRegion *reg, TESShalfEdge *newEdge )
-	static fixUpperEdge(tess, reg, newEdge) {
+	static fixUpperEdge(tess: Tesselator, reg: ActiveRegion, newEdge: TESShalfEdge) {
 		/*
 		 * Replace an upper edge which needs fixing (see ConnectRightVertex).
 		 */
@@ -124,7 +128,7 @@ export class Sweep {
 	}
 
 	//static ActiveRegion *TopLeftRegion( TESStesselator *tess, ActiveRegion *reg )
-	static topLeftRegion(tess, reg) {
+	static topLeftRegion(tess: Tesselator, reg: ActiveRegion) {
 		var org = reg.eUp.Org;
 		var e;
 
@@ -149,7 +153,7 @@ export class Sweep {
 	}
 
 	//static ActiveRegion *TopRightRegion( ActiveRegion *reg )
-	static topRightRegion(reg) {
+	static topRightRegion(reg: ActiveRegion) {
 		var dst = reg.eUp.Dst;
 		/* Find the region above the uppermost edge with the same destination */
 		do {
@@ -159,7 +163,7 @@ export class Sweep {
 	}
 
 	//static ActiveRegion *AddRegionBelow( TESStesselator *tess, ActiveRegion *regAbove, TESShalfEdge *eNewUp )
-	static addRegionBelow(tess, regAbove, eNewUp) {
+	static addRegionBelow(tess: Tesselator, regAbove: ActiveRegion, eNewUp: TESShalfEdge) {
 		/*
 		 * Add a new active region to the sweep line, *somewhere* below "regAbove"
 		 * (according to where the new edge belongs in the sweep-line dictionary).
@@ -179,7 +183,7 @@ export class Sweep {
 	}
 
 	//static int IsWindingInside( TESStesselator *tess, int n )
-	static isWindingInside(tess, n) {
+	static isWindingInside(tess:Tesselator, n: number) {
 		switch (tess.windingRule) {
 			case WINDING.ODD:
 				return (n & 1) !== 0;
@@ -192,19 +196,20 @@ export class Sweep {
 			case WINDING.ABS_GEQ_TWO:
 				return n >= 2 || n <= -2;
 		}
-		assert(false);
+
+		throw new Error("Invalid winding rulle");
 		return false;
 	}
 
 	//static void ComputeWinding( TESStesselator *tess, ActiveRegion *reg )
-	static computeWinding(tess, reg) {
+	static computeWinding(tess:Tesselator, reg:ActiveRegion) {
 		reg.windingNumber =
 			Sweep.regionAbove(reg).windingNumber + reg.eUp.winding;
 		reg.inside = Sweep.isWindingInside(tess, reg.windingNumber);
 	}
 
 	//static void FinishRegion( TESStesselator *tess, ActiveRegion *reg )
-	static finishRegion(tess, reg) {
+	static finishRegion(tess:Tesselator, reg:ActiveRegion) {
 		/*
 		 * Delete a region from the sweep line.  This happens when the upper
 		 * and lower chains of a region meet (at a vertex on the sweep line).
@@ -221,7 +226,7 @@ export class Sweep {
 	}
 
 	//static TESShalfEdge *FinishLeftRegions( TESStesselator *tess, ActiveRegion *regFirst, ActiveRegion *regLast )
-	static finishLeftRegions(tess, regFirst, regLast) {
+	static finishLeftRegions(tess:Tesselator, regFirst:ActiveRegion, regLast:ActiveRegion) {
 		/*
 		 * We are given a vertex with one or more left-going edges.  All affected
 		 * edges should be in the edge dictionary.  Starting at regFirst->eUp,
@@ -234,10 +239,11 @@ export class Sweep {
 		 * mesh if necessary, so that the ordering of edges around vOrg is the
 		 * same as in the dictionary.
 		 */
-		var e, ePrev;
+		var e;
 		var reg = null;
 		var regPrev = regFirst;
 		var ePrev = regFirst.eUp;
+		
 		while (regPrev !== regLast) {
 			regPrev.fixUpperEdge = false; /* placement was OK */
 			reg = Sweep.regionBelow(regPrev);
@@ -274,7 +280,7 @@ export class Sweep {
 	}
 
 	//static void AddRightEdges( TESStesselator *tess, ActiveRegion *regUp, TESShalfEdge *eFirst, TESShalfEdge *eLast, TESShalfEdge *eTopLeft, int cleanUp )
-	static addRightEdges(tess, regUp, eFirst, eLast, eTopLeft, cleanUp) {
+	static addRightEdges(tess: Tesselator, regUp: ActiveRegion, eFirst: TESShalfEdge, eLast:TESShalfEdge, eTopLeft:TESShalfEdge, cleanUp: boolean) {
 		/*
 		 * Purpose: insert right-going edges into the edge dictionary, and update
 		 * winding numbers and mesh connectivity appropriately.  All right-going
@@ -343,7 +349,7 @@ export class Sweep {
 	}
 
 	//static void SpliceMergeVertices( TESStesselator *tess, TESShalfEdge *e1, TESShalfEdge *e2 )
-	static spliceMergeVertices(tess, e1, e2) {
+	static spliceMergeVertices(tess: Tesselator, e1:TESShalfEdge, e2:TESShalfEdge) {
 		/*
 		 * Two vertices with idential coordinates are combined into one.
 		 * e1->Org is kept, while e2->Org is discarded.
@@ -352,7 +358,7 @@ export class Sweep {
 	}
 
 	//static void VertexWeights( TESSvertex *isect, TESSvertex *org, TESSvertex *dst, TESSreal *weights )
-	static vertexWeights(isect, org, dst) {
+	static vertexWeights(isect:TESSvertex, org:TESSvertex, dst: any) {
 		/*
 		 * Find some weights which describe how the intersection vertex is
 		 * a linear combination of "org" and "dest".  Each of the two edges
@@ -370,7 +376,7 @@ export class Sweep {
 	}
 
 	//static void GetIntersectData( TESStesselator *tess, TESSvertex *isect, TESSvertex *orgUp, TESSvertex *dstUp, TESSvertex *orgLo, TESSvertex *dstLo )
-	static getIntersectData(tess, isect, orgUp, dstUp, orgLo, dstLo) {
+	static getIntersectData(tess: Tesselator, isect:TESSvertex, orgUp:TESSvertex, dstUp:TESSvertex, orgLo:TESSvertex, dstLo:TESSvertex) {
 		/*
 		 * We've computed a new intersection point, now we need a "data" pointer
 		 * from the user so that we can refer to this new vertex in the
@@ -383,7 +389,7 @@ export class Sweep {
 	}
 
 	//static int CheckForRightSplice( TESStesselator *tess, ActiveRegion *regUp )
-	static checkForRightSplice(tess, regUp) {
+	static checkForRightSplice(tess:Tesselator, regUp:ActiveRegion) {
 		/*
 		 * Check the upper and lower edge of "regUp", to make sure that the
 		 * eUp->Org is above eLo, or eLo->Org is below eUp (depending on which
@@ -439,7 +445,7 @@ export class Sweep {
 	}
 
 	//static int CheckForLeftSplice( TESStesselator *tess, ActiveRegion *regUp )
-	static checkForLeftSplice(tess, regUp) {
+	static checkForLeftSplice(tess: Tesselator, regUp: ActiveRegion) {
 		/*
 		 * Check the upper and lower edge of "regUp", to make sure that the
 		 * eUp->Dst is above eLo, or eLo->Dst is below eUp (depending on which
@@ -486,7 +492,7 @@ export class Sweep {
 	}
 
 	//static int CheckForIntersect( TESStesselator *tess, ActiveRegion *regUp )
-	static checkForIntersect(tess, regUp) {
+	static checkForIntersect(tess: Tesselator, regUp: ActiveRegion) {
 		/*
 		 * Check the upper and lower edges of the given region to see if
 		 * they intersect.  If so, create the intersection and add it
@@ -637,7 +643,7 @@ export class Sweep {
 	}
 
 	//static void WalkDirtyRegions( TESStesselator *tess, ActiveRegion *regUp )
-	static walkDirtyRegions(tess, regUp) {
+	static walkDirtyRegions(tess: Tesselator, regUp: ActiveRegion) {
 		/*
 		 * When the upper or lower edge of any region changes, the region is
 		 * marked "dirty".  This routine walks through all the dirty regions
@@ -724,7 +730,7 @@ export class Sweep {
 	}
 
 	//static void ConnectRightVertex( TESStesselator *tess, ActiveRegion *regUp, TESShalfEdge *eBottomLeft )
-	static connectRightVertex(tess, regUp, eBottomLeft) {
+	static connectRightVertex(tess: Tesselator, regUp: ActiveRegion, eBottomLeft: TESShalfEdge) {
 		/*
 		 * Purpose: connect a "right" vertex vEvent (one where all edges go left)
 		 * to the unprocessed portion of the mesh.  Since there are no right-going
@@ -822,7 +828,7 @@ export class Sweep {
 	//#define TOLERANCE_NONZERO	FALSE
 
 	//static void ConnectLeftDegenerate( TESStesselator *tess, ActiveRegion *regUp, TESSvertex *vEvent )
-	static connectLeftDegenerate(tess, regUp, vEvent) {
+	static connectLeftDegenerate(tess: Tesselator, regUp: ActiveRegion, vEvent: TESSvertex) {
 		/*
 		 * The event vertex lies exacty on an already-processed edge or vertex.
 		 * Adding the new vertex involves splicing it into the already-processed
@@ -887,7 +893,7 @@ export class Sweep {
 	}
 
 	//static void ConnectLeftVertex( TESStesselator *tess, TESSvertex *vEvent )
-	static connectLeftVertex(tess, vEvent) {
+	static connectLeftVertex(tess: Tesselator, vEvent: TESSvertex) {
 		/*
 		 * Purpose: connect a "left" vertex (one where both edges go right)
 		 * to the processed portion of the mesh.  Let R be the active region
@@ -963,7 +969,7 @@ export class Sweep {
 	}
 
 	//static void SweepEvent( TESStesselator *tess, TESSvertex *vEvent )
-	static sweepEvent(tess, vEvent) {
+	static sweepEvent(tess: Tesselator, vEvent: TESSvertex) {
 		/*
 		 * Does everything necessary when the sweep line crosses a vertex.
 		 * Updates the mesh and the edge dictionary.
@@ -1025,7 +1031,7 @@ export class Sweep {
 	 */
 
 	//static void AddSentinel( TESStesselator *tess, TESSreal smin, TESSreal smax, TESSreal t )
-	static addSentinel(tess, smin, smax, t) {
+	static addSentinel(tess: Tesselator, smin: number, smax: number, t: number) {
 		/*
 		 * We add two sentinel edges above and below all other edges,
 		 * to avoid special cases at the top and bottom.
@@ -1051,7 +1057,7 @@ export class Sweep {
 	}
 
 	//static void InitEdgeDict( TESStesselator *tess )
-	static initEdgeDict(tess) {
+	static initEdgeDict(tess: Tesselator) {
 		/*
 		 * We maintain an ordering of edge intersections with the sweep line.
 		 * This order is maintained in a dynamic dictionary.
@@ -1071,7 +1077,7 @@ export class Sweep {
 		Sweep.addSentinel(tess, smin, smax, tmax);
 	}
 
-	static doneEdgeDict(tess) {
+	static doneEdgeDict(tess: Tesselator) {
 		var reg;
 		var fixedEdges = 0;
 
@@ -1092,7 +1098,7 @@ export class Sweep {
 		//	dictDeleteDict( &tess->alloc, tess->dict );
 	}
 
-	static removeDegenerateEdges(tess) {
+	static removeDegenerateEdges(tess:Tesselator) {
 		/*
 		 * Remove zero-length edges, and contours with fewer than 3 vertices.
 		 */
@@ -1127,7 +1133,7 @@ export class Sweep {
 		}
 	}
 
-	static initPriorityQ(tess) {
+	static initPriorityQ(tess:Tesselator) {
 		/*
 		 * Insert all vertices into the priority queue which determines the
 		 * order in which vertices cross the sweep line.
@@ -1162,11 +1168,11 @@ export class Sweep {
 		return true;
 	}
 
-	static donePriorityQ(tess) {
+	static donePriorityQ(tess: Tesselator) {
 		tess.pq = null;
 	}
 
-	static removeDegenerateFaces(tess, mesh) {
+	static removeDegenerateFaces(tess: Tesselator, mesh:TESSmesh) {
 		/*
 		 * Delete any degenerate faces with only two edges.  WalkDirtyRegions()
 		 * will catch almost all of these, but it won't catch degenerate faces
@@ -1199,7 +1205,7 @@ export class Sweep {
 		return true;
 	}
 
-	static computeInterior(tess) {
+	static computeInterior(tess:Tesselator, validate: boolean = true) {
 		/*
 		 * tessComputeInterior( tess ) computes the planar arrangement specified
 		 * by the given contours, and further subdivides this arrangement
@@ -1216,7 +1222,12 @@ export class Sweep {
 		 *	e1 < e2  iff  e1.x < e2.x || (e1.x == e2.x && e1.y < e2.y)
 		 */
 		Sweep.removeDegenerateEdges(tess);
-		if (!Sweep.initPriorityQ(tess)) return false; /* if error */
+		
+		/* if error */
+		if (!Sweep.initPriorityQ(tess)) {
+			return false;
+		}
+
 		Sweep.initEdgeDict(tess);
 
 		while ((v = tess.pq.extractMin()) !== null) {
@@ -1246,12 +1257,18 @@ export class Sweep {
 
 		/* Set tess->event for debugging purposes */
 		tess.event = tess.dict.min().key.eUp.Org;
+
 		Sweep.debugEvent(tess);
 		Sweep.doneEdgeDict(tess);
 		Sweep.donePriorityQ(tess);
 
-		if (!Sweep.removeDegenerateFaces(tess, tess.mesh)) return false;
-		tess.mesh.check();
+		if (!Sweep.removeDegenerateFaces(tess, tess.mesh)) {
+			return false;
+		}
+
+		if(validate) {
+			tess.mesh.check();
+		}
 
 		return true;
 	}

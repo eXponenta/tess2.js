@@ -1,35 +1,36 @@
-import {assert} from "./assert";
+import {assert} from "./../utils/assert";
+import { TESSvertex, TESShalfEdge } from "../mesh/index";
 
 export class Geom {
 
-	static vertEq (u, v) {
+	static vertEq (u: TESSvertex, v: TESSvertex) {
 		return u.s === v.s && u.t === v.t;
 	}
 
 	/* Returns TRUE if u is lexicographically <= v. */
-	static vertLeq(u, v) {
+	static vertLeq(u: TESSvertex, v: TESSvertex) {
 		return u.s < v.s || (u.s === v.s && u.t <= v.t);
 	}
 
 	/* Versions of VertLeq, EdgeSign, EdgeEval with s and t transposed. */
-	static transLeq(u, v) {
+	static transLeq(u: TESSvertex, v: TESSvertex) {
 		return u.t < v.t || (u.t === v.t && u.s <= v.s);
 	}
 
-	static edgeGoesLeft(e) {
+	static edgeGoesLeft(e: TESShalfEdge) {
 		return Geom.vertLeq(e.Dst, e.Org);
 	}
 
-	static edgeGoesRight(e) {
+	static edgeGoesRight(e: TESShalfEdge) {
 		return Geom.vertLeq(e.Org, e.Dst);
 	}
 
-	static vertL1dist(u, v) {
+	static vertL1dist(u: TESSvertex, v: TESSvertex) {
 		return Math.abs(u.s - v.s) + Math.abs(u.t - v.t);
 	}
 
 	//TESSreal tesedgeEval( TESSvertex *u, TESSvertex *v, TESSvertex *w )
-	static edgeEval(u, v, w) {
+	static edgeEval(u: TESSvertex, v: TESSvertex, w: TESSvertex) {
 		/* Given three vertices u,v,w such that VertLeq(u,v) && VertLeq(v,w),
 		 * evaluates the t-coord of the edge uw at the s-coord of the vertex v.
 		 * Returns v->t - (uw)(v->s), ie. the signed distance from uw to v.
@@ -57,7 +58,7 @@ export class Geom {
 	}
 
 	//TESSreal tesedgeSign( TESSvertex *u, TESSvertex *v, TESSvertex *w )
-	static edgeSign(u, v, w) {
+	static edgeSign(u: TESSvertex, v: TESSvertex, w: TESSvertex) {
 		/* Returns a number whose sign matches EdgeEval(u,v,w) but which
 		 * is cheaper to evaluate.  Returns > 0, == 0 , or < 0
 		 * as v is above, on, or below the edge uw.
@@ -79,7 +80,7 @@ export class Geom {
 	 */
 
 	//TESSreal testransEval( TESSvertex *u, TESSvertex *v, TESSvertex *w )
-	static transEval(u, v, w) {
+	static transEval(u: TESSvertex, v: TESSvertex, w: TESSvertex) {
 		/* Given three vertices u,v,w such that TransLeq(u,v) && TransLeq(v,w),
 		 * evaluates the t-coord of the edge uw at the s-coord of the vertex v.
 		 * Returns v->s - (uw)(v->t), ie. the signed distance from uw to v.
@@ -107,7 +108,7 @@ export class Geom {
 	}
 
 	//TESSreal testransSign( TESSvertex *u, TESSvertex *v, TESSvertex *w )
-	static transSign(u, v, w) {
+	static transSign(u: TESSvertex, v: TESSvertex, w: TESSvertex) {
 		/* Returns a number whose sign matches TransEval(u,v,w) but which
 		 * is cheaper to evaluate.  Returns > 0, == 0 , or < 0
 		 * as v is above, on, or below the edge uw.
@@ -125,7 +126,7 @@ export class Geom {
 	}
 
 	//int tesvertCCW( TESSvertex *u, TESSvertex *v, TESSvertex *w )
-	static vertCCW(u, v, w) {
+	static vertCCW(u: TESSvertex, v: TESSvertex, w: TESSvertex) {
 		/* For almost-degenerate situations, the results are not reliable.
 		 * Unless the floating-point arithmetic can be performed without
 		 * rounding errors, *any* implementation will give incorrect results
@@ -143,7 +144,7 @@ export class Geom {
 	 * MIN(x,y) <= r <= MAX(x,y), and the results are very accurate
 	 * even when a and b differ greatly in magnitude.
 	 */
-	static interpolate(a, x, b, y) {
+	static interpolate(a: number, x:number, b:number, y:number) {
 		return (
 			(a = a < 0 ? 0 : a),
 			(b = b < 0 ? 0 : b),
@@ -177,7 +178,7 @@ export class Geom {
 	}
 	#endif*/
 
-	static intersect(o1, d1, o2, d2, v) {
+	static intersect(o1: TESSvertex, d1: TESSvertex, o2: TESSvertex, d2:TESSvertex, v: TESSvertex) {
 		/* Given edges (o1,d1) and (o2,d2), compute their point of intersection.
 		 * The computed point is guaranteed to lie in the intersection of the
 		 * bounding rectangles defined by each edge.

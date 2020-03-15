@@ -1,49 +1,9 @@
-import { Geom } from "../Geom";
-import { assert } from "../assert";
-import { TESSface} from './TESSface';
+import { Geom } from "../utils/Geom";
+import { assert } from "../utils/assert";
+import { TESSface } from "./TESSface";
 import { TESShalfEdge } from "./TESShalfEdge";
 import { TESSvertex } from "./TESSvertex";
 
-/* Internal */
-
-export function TESSmesh() {
-	var v = new TESSvertex();
-	var f = new TESSface();
-	var e = new TESShalfEdge(0);
-	var eSym = new TESShalfEdge(1);
-
-	v.next = v.prev = v;
-	v.anEdge = null;
-
-	f.next = f.prev = f;
-	f.anEdge = null;
-	f.trail = null;
-	f.marked = false;
-	f.inside = false;
-
-	e.next = e;
-	e.Sym = eSym;
-	e.Onext = null;
-	e.Lnext = null;
-	e.Org = null;
-	e.Lface = null;
-	e.winding = 0;
-	e.activeRegion = null;
-
-	eSym.next = eSym;
-	eSym.Sym = e;
-	eSym.Onext = null;
-	eSym.Lnext = null;
-	eSym.Org = null;
-	eSym.Lface = null;
-	eSym.winding = 0;
-	eSym.activeRegion = null;
-
-	this.vHead = v; /* dummy header for vertex list */
-	this.fHead = f; /* dummy header for face list */
-	this.eHead = e; /* dummy header for edge list */
-	this.eHeadSym = eSym; /* and its symmetric counterpart */
-}
 
 /* The mesh operations below have three motivations: completeness,
  * convenience, and efficiency.  The basic mesh operations are MakeEdge,
@@ -121,14 +81,41 @@ export function TESSmesh() {
  *
  * tessMeshCheckMesh( mesh ) checks a mesh for self-consistency.
  */
+export class TESSmesh {
+	vHead: TESSvertex; /* dummy header for vertex list */
+	fHead: TESSface; /* dummy header for face list */
+	eHead: TESShalfEdge; /* dummy header for edge list */
+	eHeadSym: TESShalfEdge; /* and its symmetric counterpart */
 
-TESSmesh.prototype = {
+	constructor() {
+		const v = new TESSvertex();
+		const f = new TESSface();
+		const e = new TESShalfEdge(0);
+		const eSym = new TESShalfEdge(1);
+
+		v.next = v.prev = v;
+		v.anEdge = null;
+
+		f.next = f.prev = f;
+
+		e.next = e;
+		e.Sym = eSym;
+
+		eSym.next = eSym;
+		eSym.Sym = e;
+
+		this.vHead = v;
+		this.fHead = f;
+		this.eHead = e;
+		this.eHeadSym = eSym;
+	}
+
 	/* MakeEdge creates a new pair of half-edges which form their own loop.
 	 * No vertex or face structures are allocated, but these must be assigned
 	 * before the current edge operation is completed.
 	 */
 	//static TESShalfEdge *MakeEdge( TESSmesh* mesh, TESShalfEdge *eNext )
-	makeEdge_: function(eNext) {
+	makeEdge_(eNext: TESShalfEdge) {
 		var e = new TESShalfEdge(0);
 		var eSym = new TESShalfEdge(1);
 
@@ -163,7 +150,7 @@ TESSmesh.prototype = {
 		eSym.activeRegion = null;
 
 		return e;
-	},
+	}
 
 	/* Splice( a, b ) is best described by the Guibas/Stolfi paper or the
 	 * CS348a notes (see mesh.h).  Basically it modifies the mesh so that
@@ -172,14 +159,14 @@ TESSmesh.prototype = {
 	 * For more explanation see tessMeshSplice() below.
 	 */
 	// static void Splice( TESShalfEdge *a, TESShalfEdge *b )
-	splice_: function(a, b) {
+	splice_(a:TESShalfEdge, b: TESShalfEdge) {
 		var aOnext = a.Onext;
 		var bOnext = b.Onext;
 		aOnext.Sym.Lnext = b;
 		bOnext.Sym.Lnext = a;
 		a.Onext = bOnext;
 		b.Onext = aOnext;
-	},
+	}
 
 	/* MakeVertex( newVertex, eOrig, vNext ) attaches a new vertex and makes it the
 	 * origin of all edges in the vertex loop to which eOrig belongs. "vNext" gives
@@ -188,10 +175,10 @@ TESSmesh.prototype = {
 	 * list will not see the newly created vertices.
 	 */
 	//static void MakeVertex( TESSvertex *newVertex, TESShalfEdge *eOrig, TESSvertex *vNext )
-	makeVertex_: function(newVertex, eOrig, vNext) {
+	makeVertex_(newVertex: TESSvertex, eOrig: TESShalfEdge, vNext: TESSvertex) {
 		var vNew = newVertex;
 
-		assert(vNew);
+		assert(vNew, "Vertex can't be null!");
 
 		/* insert in circular doubly-linked list before vNext */
 		var vPrev = vNext.prev;
@@ -209,7 +196,7 @@ TESSmesh.prototype = {
 			e.Org = vNew;
 			e = e.Onext;
 		} while (e !== eOrig);
-	},
+	}
 
 	/* MakeFace( newFace, eOrig, fNext ) attaches a new face and makes it the left
 	 * face of all edges in the face loop to which eOrig belongs.  "fNext" gives
@@ -218,9 +205,10 @@ TESSmesh.prototype = {
 	 * list will not see the newly created faces.
 	 */
 	// static void MakeFace( TESSface *newFace, TESShalfEdge *eOrig, TESSface *fNext )
-	makeFace_: function(newFace, eOrig, fNext) {
+	makeFace_(newFace: TESSface, eOrig:TESShalfEdge, fNext:TESSface) {
 		var fNew = newFace;
-		assert(fNew !== null);
+
+		assert(fNew, "Face can't be null");
 
 		/* insert in circular doubly-linked list before fNext */
 		var fPrev = fNext.prev;
@@ -244,13 +232,13 @@ TESSmesh.prototype = {
 			e.Lface = fNew;
 			e = e.Lnext;
 		} while (e !== eOrig);
-	},
+	}
 
 	/* KillEdge( eDel ) destroys an edge (the half-edges eDel and eDel->Sym),
 	 * and removes from the global edge list.
 	 */
 	//static void KillEdge( TESSmesh *mesh, TESShalfEdge *eDel )
-	killEdge_: function(eDel) {
+	killEdge_(eDel: TESShalfEdge) {
 		/* Half-edges are allocated in pairs, see EdgePair above */
 		if (eDel.Sym.side < eDel.side) {
 			eDel = eDel.Sym;
@@ -261,13 +249,13 @@ TESSmesh.prototype = {
 		var ePrev = eDel.Sym.next;
 		eNext.Sym.next = ePrev;
 		ePrev.Sym.next = eNext;
-	},
+	}
 
 	/* KillVertex( vDel ) destroys a vertex and removes it from the global
 	 * vertex list.  It updates the vertex loop to point to a given new vertex.
 	 */
 	//static void KillVertex( TESSmesh *mesh, TESSvertex *vDel, TESSvertex *newOrg )
-	killVertex_: function(vDel, newOrg) {
+	killVertex_(vDel: TESSvertex, newOrg: TESSvertex) {
 		var eStart = vDel.anEdge;
 		/* change the origin of all affected edges */
 		var e = eStart;
@@ -281,13 +269,13 @@ TESSmesh.prototype = {
 		var vNext = vDel.next;
 		vNext.prev = vPrev;
 		vPrev.next = vNext;
-	},
+	}
 
 	/* KillFace( fDel ) destroys a face and removes it from the global face
 	 * list.  It updates the face loop to point to a given new face.
 	 */
 	//static void KillFace( TESSmesh *mesh, TESSface *fDel, TESSface *newLface )
-	killFace_: function(fDel, newLface) {
+	killFace_(fDel: TESSface, newLface: TESSface) {
 		var eStart = fDel.anEdge;
 
 		/* change the left face of all affected edges */
@@ -302,7 +290,7 @@ TESSmesh.prototype = {
 		var fNext = fDel.next;
 		fNext.prev = fPrev;
 		fPrev.next = fNext;
-	},
+	}
 
 	/****************** Basic Edge Operations **********************/
 
@@ -310,7 +298,7 @@ TESSmesh.prototype = {
 	 * The loop consists of the two new half-edges.
 	 */
 	//TESShalfEdge *tessMeshMakeEdge( TESSmesh *mesh )
-	makeEdge: function() {
+	makeEdge() {
 		var newVertex1 = new TESSvertex();
 		var newVertex2 = new TESSvertex();
 		var newFace = new TESSface();
@@ -319,7 +307,7 @@ TESSmesh.prototype = {
 		this.makeVertex_(newVertex2, e.Sym, this.vHead);
 		this.makeFace_(newFace, e, this.fHead);
 		return e;
-	},
+	}
 
 	/* tessMeshSplice( eOrg, eDst ) is the basic operation for changing the
 	 * mesh connectivity and topology.  It changes the mesh so that
@@ -345,7 +333,7 @@ TESSmesh.prototype = {
 	 * If eDst == eOrg->Oprev, the old vertex will have a single edge.
 	 */
 	//int tessMeshSplice( TESSmesh* mesh, TESShalfEdge *eOrg, TESShalfEdge *eDst )
-	splice: function(eOrg, eDst) {
+	splice(eOrg: TESShalfEdge, eDst: TESShalfEdge) {
 		var joiningLoops = false;
 		var joiningVertices = false;
 
@@ -383,7 +371,7 @@ TESSmesh.prototype = {
 			this.makeFace_(newFace, eDst, eOrg.Lface);
 			eOrg.Lface.anEdge = eOrg;
 		}
-	},
+	}
 
 	/* tessMeshDelete( eDel ) removes the edge eDel.  There are several cases:
 	 * if (eDel->Lface != eDel->Rface), we join two loops into one; the loop
@@ -396,7 +384,7 @@ TESSmesh.prototype = {
 	 * unnecessary vertices and faces.
 	 */
 	//int tessMeshDelete( TESSmesh *mesh, TESShalfEdge *eDel )
-	delete: function(eDel) {
+	delete(eDel: TESShalfEdge) {
 		var eDelSym = eDel.Sym;
 		var joiningLoops = false;
 
@@ -440,7 +428,7 @@ TESSmesh.prototype = {
 
 		/* Any isolated vertices or faces have already been freed. */
 		this.killEdge_(eDel);
-	},
+	}
 
 	/******************** Other Edge Operations **********************/
 
@@ -453,7 +441,7 @@ TESSmesh.prototype = {
 	 * eOrg and eNew will have the same left face.
 	 */
 	// TESShalfEdge *tessMeshAddEdgeVertex( TESSmesh *mesh, TESShalfEdge *eOrg );
-	addEdgeVertex: function(eOrg) {
+	addEdgeVertex(eOrg: TESShalfEdge) {
 		var eNew = this.makeEdge_(eOrg);
 		var eNewSym = eNew.Sym;
 
@@ -469,14 +457,14 @@ TESSmesh.prototype = {
 		eNew.Lface = eNewSym.Lface = eOrg.Lface;
 
 		return eNew;
-	},
+	}
 
 	/* tessMeshSplitEdge( eOrg ) splits eOrg into two edges eOrg and eNew,
 	 * such that eNew == eOrg->Lnext.  The new vertex is eOrg->Dst == eNew->Org.
 	 * eOrg and eNew will have the same left face.
 	 */
 	// TESShalfEdge *tessMeshSplitEdge( TESSmesh *mesh, TESShalfEdge *eOrg );
-	splitEdge: function(eOrg, eDst) {
+	splitEdge(eOrg: TESShalfEdge) {
 		var tempHalfEdge = this.addEdgeVertex(eOrg);
 		var eNew = tempHalfEdge.Sym;
 
@@ -492,7 +480,7 @@ TESSmesh.prototype = {
 		eNew.Sym.winding = eOrg.Sym.winding;
 
 		return eNew;
-	},
+	}
 
 	/* tessMeshConnect( eOrg, eDst ) creates a new edge from eOrg->Dst
 	 * to eDst->Org, and returns the corresponding half-edge eNew.
@@ -506,7 +494,7 @@ TESSmesh.prototype = {
 	 */
 
 	// TESShalfEdge *tessMeshConnect( TESSmesh *mesh, TESShalfEdge *eOrg, TESShalfEdge *eDst );
-	connect: function(eOrg, eDst) {
+	connect(eOrg: TESShalfEdge, eDst: TESShalfEdge) {
 		var joiningLoops = false;
 		var eNew = this.makeEdge_(eOrg);
 		var eNewSym = eNew.Sym;
@@ -535,7 +523,7 @@ TESSmesh.prototype = {
 			this.makeFace_(newFace, eNew, eOrg.Lface);
 		}
 		return eNew;
-	},
+	}
 
 	/* tessMeshZapFace( fZap ) destroys a face and removes it from the
 	 * global face list.  All edges of fZap will have a NULL pointer as their
@@ -544,7 +532,7 @@ TESSmesh.prototype = {
 	 * An entire mesh can be deleted by zapping its faces, one at a time,
 	 * in any order.  Zapped faces cannot be used in further mesh operations!
 	 */
-	zapFace: function(fZap) {
+	zapFace(fZap: TESSface) {
 		var eStart = fZap.anEdge;
 		var e, eNext, eSym;
 		var fPrev, fNext;
@@ -583,9 +571,9 @@ TESSmesh.prototype = {
 		fNext = fZap.next;
 		fNext.prev = fPrev;
 		fPrev.next = fNext;
-	},
+	}
 
-	countFaceVerts_: function(f) {
+	countFaceVerts_(f: TESSface) {
 		var eCur = f.anEdge;
 		var n = 0;
 		do {
@@ -593,10 +581,10 @@ TESSmesh.prototype = {
 			eCur = eCur.Lnext;
 		} while (eCur !== f.anEdge);
 		return n;
-	},
+	}
 
 	//int tessMeshMergeConvexFaces( TESSmesh *mesh, int maxVertsPerFace )
-	mergeConvexFaces: function(maxVertsPerFace) {
+	mergeConvexFaces(maxVertsPerFace: number) {
 		var f;
 		var eCur, eNext, eSym;
 		var vStart;
@@ -649,11 +637,11 @@ TESSmesh.prototype = {
 		}
 
 		return true;
-	},
+	}
 
 	/* tessMeshCheckMesh( mesh ) checks a mesh for self-consistency.
 	 */
-	check: function() {
+	check() {
 		var fHead = this.fHead;
 		var vHead = this.vHead;
 		var eHead = this.eHead;
@@ -709,4 +697,4 @@ TESSmesh.prototype = {
 				e.Rface === null,
 		);
 	}
-}
+};

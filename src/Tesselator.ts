@@ -1,9 +1,11 @@
-import { WINDING, MODE } from './constants';
-import { TESSmesh } from './units/TESSmesh';
-import { Geom } from "./Geom";
-import { Sweep } from "./Sweep";
+import { WINDING, ELEMENT } from './utils/constants';
+import { TESSmesh } from './mesh/TESSmesh';
+import { Geom } from "./utils/Geom";
+import { Sweep } from "./utils/Sweep";
 import { V3, V2 } from './type';
-import { TESShalfEdge } from './units/TESShalfEdge';
+import { TESShalfEdge } from './mesh/TESShalfEdge';
+import { PriorityQ } from './utils/PriorityQ';
+import { Dict } from './utils/Dict';
 
 type TESSface = any;
 //type TESSmesh = any;
@@ -27,8 +29,8 @@ export class Tesselator {
 
 	windingRule = WINDING.ODD;
 
-	dict: any = null; /* edge dictionary for sweep line */
-	pq: Array<any> | null = null; /* priority queue of vertex events */
+	dict: Dict = null; /* edge dictionary for sweep line */
+	pq: PriorityQ = null; /* priority queue of vertex events */
 	event: any = null; /* current sweep event being processed */
 
 	vertexIndexCounter: number = 0;
@@ -528,7 +530,7 @@ export class Tesselator {
 		}
 
 		this.elementCount = maxFaceCount;
-		if (elementType === MODE.CONNECTED_POLYGONS) {
+		if (elementType === ELEMENT.CONNECTED_POLYGONS) {
 			maxFaceCount *= 2;
 		}
 		/*		tess.elements = (TESSindex*)tess->alloc.memalloc( tess->alloc.userData,
@@ -600,7 +602,7 @@ export class Tesselator {
 			}
 
 			// Store polygon connectivity
-			if (elementType === MODE.CONNECTED_POLYGONS) {
+			if (elementType === ELEMENT.CONNECTED_POLYGONS) {
 				edge = f.anEdge;
 				do {
 					this.elements[nel++] = this.getNeighbourFace_(edge);
@@ -704,9 +706,9 @@ export class Tesselator {
 			this.mesh = new TESSmesh();
 		}
 		/*	 	if ( tess->mesh == NULL ) {
-				tess->outOfMemory = 1;
-				return;
-			}*/
+			tess->outOfMemory = 1;
+			return;
+		}*/
 
 		if (size < 2) {
 			size = 2;
@@ -760,12 +762,22 @@ export class Tesselator {
 	}
 
 	//	int tessTesselate( TESStesselator *tess, int windingRule, int elementType, int polySize, int vertexSize, const TESSreal* normal )
+	/**
+	 * Run tesselation
+	 * @param windingRule 
+	 * @param elementType 
+	 * @param polySize 
+	 * @param vertexSize 
+	 * @param normal 
+	 * @param validate UNSAFE! Skip mesh validation pass, may throw any error.
+	 */
 	tesselate(
-		windingRule: number,
-		elementType: number,
+		windingRule: WINDING = WINDING.ODD,
+		elementType: ELEMENT = ELEMENT.POLYGONS,
 		polySize: number,
 		vertexSize: 2 | 3,
 		normal: V3,
+		validate : boolean = true
 	) {
 		this.vertices = [];
 		this.elements = [];
@@ -809,7 +821,7 @@ export class Tesselator {
 		 * to the polygon, according to the rule given by tess->windingRule.
 		 * Each interior region is guaranteed be monotone.
 		 */
-		Sweep.computeInterior(this);
+		Sweep.computeInterior(this, validate);
 
 		var mesh = this.mesh;
 
@@ -817,16 +829,18 @@ export class Tesselator {
 		 * except those which separate the interior from the exterior.
 		 * Otherwise we tessellate all the regions marked "inside".
 		 */
-		if (elementType === MODE.BOUNDARY_CONTOURS) {
+		if (elementType === ELEMENT.BOUNDARY_CONTOURS) {
 			this.setWindingNumber_(mesh, 1, true);
 		} else {
 			this.tessellateInterior_(mesh);
 		}
 		//		if (rc == 0) longjmp(tess->env,1);  /* could've used a label */
 
-		mesh.check();
+		if(!validate){
+			 mesh.check();
+		}
 
-		if (elementType === MODE.BOUNDARY_CONTOURS) {
+		if (elementType === ELEMENT.BOUNDARY_CONTOURS) {
 			this.outputContours_(mesh, vertexSize); /* output contours */
 		} else {
 			this.outputPolymesh_(

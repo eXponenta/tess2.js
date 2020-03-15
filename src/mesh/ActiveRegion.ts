@@ -6,7 +6,7 @@ import { TESShalfEdge } from './TESShalfEdge';
  * sweep line crosses each vertex, we update the affected regions.
  */
 export class ActiveRegion {
-	eUp?: TESShalfEdge = undefined; /* upper edge, directed right to left */
+	eUp: TESShalfEdge = null; /* upper edge, directed right to left */
 	nodeUp?: any = null; /* dictionary node corresponding to eUp */
 	windingNumber: number = 0;
 	/* used to determine which regions are

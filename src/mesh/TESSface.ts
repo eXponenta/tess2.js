@@ -1,8 +1,8 @@
 import { TESShalfEdge } from './TESShalfEdge';
 export class TESSface {
-	next?: TESSface = undefined; /* next face (never NULL) */
-	prev?: TESSface = undefined; /* previous face (never NULL) */
-	anEdge?: TESShalfEdge = undefined; /* a half edge with this left face */
+	next: TESSface = null; /* next face (never NULL) */
+	prev: TESSface = null; /* previous face (never NULL) */
+	anEdge: TESShalfEdge = null; /* a half edge with this left face */
 
 	/* Internal data (keep hidden) */
 	trail: any = null; /* "stack" for conversion to strips */

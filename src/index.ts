@@ -32,42 +32,39 @@
  */
 
 import { Tesselator } from "./Tesselator";
-import { WINDING, MODE } from './constants';
+import { WINDING, ELEMENT } from "./utils/constants";
 import { V3 } from "./type";
 
-export * from "./Geom";
 export interface IOptions {
-	windingRule?: number,
-	elementType?: number,
-	polySize?: number,
-	vertexSize?: 2 | 3,
-	normal?: V3,
-	contours: Array<Array<number>>,
-	strict?: boolean,
-	debug?: boolean
+	windingRule?: number;
+	elementType?: number;
+	polySize?: number;
+	vertexSize?: 2 | 3;
+	normal?: V3;
+	contours: Array<Array<number>>;
+	strict?: boolean;
+	debug?: boolean;
 }
 
 export interface IResult {
-	vertices: Array<number>,
-	vertexIndices: Array<number>,
-	vertexCount: number,
-	elements: Array<number>,
-	elementCount: number,
-	mesh: any,
-};
+	vertices: Array<number>;
+	vertexIndices: Array<number>;
+	vertexCount: number;
+	elements: Array<number>;
+	elementCount: number;
+	mesh: any;
+}
 
-export {
-	Tesselator, WINDING, MODE
-};
+export { Tesselator, WINDING, ELEMENT as MODE };
 
 export function tesselate({
 	windingRule = WINDING.ODD,
-	elementType = MODE.POLYGONS,
+	elementType = ELEMENT.POLYGONS,
 	polySize = 3,
 	vertexSize = 2,
 	normal = [0, 0, 1],
 	contours = [],
-	strict = false,
+	strict = true,
 	debug = false,
 }: IOptions): IResult | undefined {
 	if (!contours && strict) {
@@ -84,7 +81,14 @@ export function tesselate({
 		tess.addContour(vertexSize || 2, contours[i]);
 	}
 
-	tess.tesselate(windingRule, elementType, polySize, vertexSize, normal);
+	tess.tesselate(
+		windingRule,
+		elementType,
+		polySize,
+		vertexSize,
+		normal,
+		strict,
+	);
 
 	return {
 		vertices: tess.vertices,
@@ -94,4 +98,4 @@ export function tesselate({
 		elementCount: tess.elementCount,
 		mesh: debug ? tess.mesh : undefined,
 	};
-};
+}
