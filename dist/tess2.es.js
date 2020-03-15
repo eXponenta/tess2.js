@@ -12,14 +12,12 @@ var ELEMENT;
     ELEMENT[ELEMENT["CONNECTED_POLYGONS"] = 1] = "CONNECTED_POLYGONS";
     ELEMENT[ELEMENT["BOUNDARY_CONTOURS"] = 2] = "BOUNDARY_CONTOURS";
 })(ELEMENT || (ELEMENT = {}));
-//# sourceMappingURL=constants.js.map
 
 function assert(cond, message = undefined) {
     if (!cond) {
         throw message || "Assertion Failed!";
     }
 }
-//# sourceMappingURL=assert.js.map
 
 class Geom {
     static vertEq(u, v) {
@@ -181,7 +179,6 @@ class Geom {
         }
     }
 }
-//# sourceMappingURL=Geom.js.map
 
 class TESSface {
     constructor() {
@@ -194,7 +191,6 @@ class TESSface {
         this.inside = false;
     }
 }
-//# sourceMappingURL=TESSface.js.map
 
 class TESShalfEdge {
     constructor(side) {
@@ -272,7 +268,6 @@ class TESSvertex {
         this.idx = 0;
     }
 }
-//# sourceMappingURL=TESSvertex.js.map
 
 class TESSmesh {
     constructor() {
@@ -627,7 +622,6 @@ class TESSmesh {
             e.Rface === null);
     }
 }
-//# sourceMappingURL=TESSmesh.js.map
 
 class PQnode {
     constructor() {
@@ -781,7 +775,6 @@ class PriorityQ {
         this.freeList = hCurr;
     }
 }
-//# sourceMappingURL=PriorityQ.js.map
 
 class ActiveRegion {
     constructor() {
@@ -843,7 +836,6 @@ class Dict {
         node.prev.next = node.next;
     }
 }
-//# sourceMappingURL=Dict.js.map
 
 class Sweep {
     static regionBelow(r) {
@@ -1893,8 +1885,9 @@ class Tesselator {
             do {
                 this.vertices[nv++] = edge.Org.coords[0];
                 this.vertices[nv++] = edge.Org.coords[1];
-                if (vertexSize > 2)
+                if (vertexSize > 2) {
                     this.vertices[nv++] = edge.Org.coords[2];
+                }
                 this.vertexIndices[nvi++] = edge.Org.idx;
                 vertCount++;
                 edge = edge.Lnext;
@@ -1978,7 +1971,6 @@ class Tesselator {
         return true;
     }
 }
-//# sourceMappingURL=Tesselator.js.map
 
 function tesselate({ windingRule = WINDING.ODD, elementType = ELEMENT.POLYGONS, polySize = 3, vertexSize = 2, normal = [0, 0, 1], contours = [], strict = true, debug = false, }) {
     if (!contours && strict) {
@@ -2001,7 +1993,6 @@ function tesselate({ windingRule = WINDING.ODD, elementType = ELEMENT.POLYGONS, 
         mesh: debug ? tess.mesh : undefined,
     };
 }
-//# sourceMappingURL=index.js.map
 
 export { ELEMENT as MODE, Tesselator, WINDING, tesselate };
 //# sourceMappingURL=tess2.es.js.map

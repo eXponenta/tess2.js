@@ -1,13 +1,13 @@
 import { Geom } from "./Geom";
 import { assert } from "./../utils/assert";
 import { PriorityQ } from "./PriorityQ";
-import { WINDING, ELEMENT } from "./constants";
+import { WINDING } from "./constants";
 import { ActiveRegion} from "./../mesh/ActiveRegion";
 import { TESSvertex } from "./../mesh/TESSvertex";
 
 import { Dict } from "./Dict";
 import { TESSmesh } from "../mesh/TESSmesh";
-import { TESSface, TESShalfEdge } from "../mesh/index";
+import { TESShalfEdge } from "../mesh/index";
 import { Tesselator } from "../index";
 
 export class Sweep {

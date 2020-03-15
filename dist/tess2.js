@@ -13,14 +13,12 @@ var Tess2 = (function (exports) {
 	    ELEMENT[ELEMENT["CONNECTED_POLYGONS"] = 1] = "CONNECTED_POLYGONS";
 	    ELEMENT[ELEMENT["BOUNDARY_CONTOURS"] = 2] = "BOUNDARY_CONTOURS";
 	})(exports.MODE || (exports.MODE = {}));
-	//# sourceMappingURL=constants.js.map
 
 	function assert(cond, message = undefined) {
 	    if (!cond) {
 	        throw message || "Assertion Failed!";
 	    }
 	}
-	//# sourceMappingURL=assert.js.map
 
 	class Geom {
 	    static vertEq(u, v) {
@@ -182,7 +180,6 @@ var Tess2 = (function (exports) {
 	        }
 	    }
 	}
-	//# sourceMappingURL=Geom.js.map
 
 	class TESSface {
 	    constructor() {
@@ -195,7 +192,6 @@ var Tess2 = (function (exports) {
 	        this.inside = false;
 	    }
 	}
-	//# sourceMappingURL=TESSface.js.map
 
 	class TESShalfEdge {
 	    constructor(side) {
@@ -273,7 +269,6 @@ var Tess2 = (function (exports) {
 	        this.idx = 0;
 	    }
 	}
-	//# sourceMappingURL=TESSvertex.js.map
 
 	class TESSmesh {
 	    constructor() {
@@ -628,7 +623,6 @@ var Tess2 = (function (exports) {
 	            e.Rface === null);
 	    }
 	}
-	//# sourceMappingURL=TESSmesh.js.map
 
 	class PQnode {
 	    constructor() {
@@ -782,7 +776,6 @@ var Tess2 = (function (exports) {
 	        this.freeList = hCurr;
 	    }
 	}
-	//# sourceMappingURL=PriorityQ.js.map
 
 	class ActiveRegion {
 	    constructor() {
@@ -844,7 +837,6 @@ var Tess2 = (function (exports) {
 	        node.prev.next = node.next;
 	    }
 	}
-	//# sourceMappingURL=Dict.js.map
 
 	class Sweep {
 	    static regionBelow(r) {
@@ -1894,8 +1886,9 @@ var Tess2 = (function (exports) {
 	            do {
 	                this.vertices[nv++] = edge.Org.coords[0];
 	                this.vertices[nv++] = edge.Org.coords[1];
-	                if (vertexSize > 2)
+	                if (vertexSize > 2) {
 	                    this.vertices[nv++] = edge.Org.coords[2];
+	                }
 	                this.vertexIndices[nvi++] = edge.Org.idx;
 	                vertCount++;
 	                edge = edge.Lnext;
@@ -1979,7 +1972,6 @@ var Tess2 = (function (exports) {
 	        return true;
 	    }
 	}
-	//# sourceMappingURL=Tesselator.js.map
 
 	function tesselate({ windingRule = exports.WINDING.ODD, elementType = exports.MODE.POLYGONS, polySize = 3, vertexSize = 2, normal = [0, 0, 1], contours = [], strict = true, debug = false, }) {
 	    if (!contours && strict) {
@@ -2002,7 +1994,6 @@ var Tess2 = (function (exports) {
 	        mesh: debug ? tess.mesh : undefined,
 	    };
 	}
-	//# sourceMappingURL=index.js.map
 
 	exports.Tesselator = Tesselator;
 	exports.tesselate = tesselate;

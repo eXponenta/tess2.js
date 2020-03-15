@@ -687,7 +687,11 @@ export class Tesselator {
 			do {
 				this.vertices[nv++] = edge.Org.coords[0];
 				this.vertices[nv++] = edge.Org.coords[1];
-				if (vertexSize > 2) this.vertices[nv++] = edge.Org.coords[2];
+				
+				if (vertexSize > 2) {
+					this.vertices[nv++] = edge.Org.coords[2];
+				}
+
 				this.vertexIndices[nvi++] = edge.Org.idx;
 				vertCount++;
 				edge = edge.Lnext;
