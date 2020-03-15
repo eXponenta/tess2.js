@@ -25,13 +25,13 @@
     "polygons",
     "contour"
   ],
-  "author": "Matt DesLauriers <dave.des@gmail.com>",
+  "author": "Timoshenko Konstantin <rondo.devil@gmail.com>",
   "license": "SGI-B-2.0",
   "bugs": {
-    "url": "https://github.com/memononen/tess2.js/issues"
+    "url": "https://github.com/eXponenta/tess2.js/issues"
   },
   "types": "./types",
-  "homepage": "https://github.com/memononen/tess2.js",
+  "homepage": "https://github.com/eXponenta/tess2.js",
   "devDependencies": {
     "@rollup/plugin-typescript": "^4.0.0",
     "rollup": "^2.0.6",
