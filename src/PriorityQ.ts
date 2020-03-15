@@ -15,19 +15,18 @@ export class PriorityQ {
 	handles: Array<PQhandleElem> = [];
 	initialized: boolean = false;
 	freeList: number = 0;
+	size: number = 0;
 
-	constructor(public size: number, public leq: (...args: any) => boolean) {
+	constructor(size: number, public leq: (...args: any) => boolean) {
+	
 		this.max = size;
+		this.nodes = Array.from({length : size + 1}, () => new PQnode() );
+		this.handles = Array.from({length : size + 1}, () => new PQhandleElem() );
 
-		this.nodes.length = size + 1;
-		this.handles.length = size + 1;
-
-		for (let i = 0; i < this.nodes.length; i++) {
-			this.nodes[i] = new PQnode();
-			this.handles[i] = new PQhandleElem();
-		}
-
-		this.nodes[1].handle = 1; /* so that Minimum() returns NULL */
+		this.initialized = false;
+		
+		/* so that Minimum() returns NULL */
+		this.nodes[1].handle = 1; 
 		this.handles[1].key = null;
 
 	}

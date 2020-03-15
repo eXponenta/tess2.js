@@ -654,21 +654,19 @@ class PQhandleElem {
 }
 class PriorityQ {
     constructor(size, leq) {
-        this.size = size;
         this.leq = leq;
         this.max = 0;
         this.nodes = [];
         this.handles = [];
         this.initialized = false;
         this.freeList = 0;
+        this.size = 0;
         this.max = size;
-        this.nodes.length = size + 1;
-        this.handles.length = size + 1;
-        for (let i = 0; i < this.nodes.length; i++) {
-            this.nodes[i] = new PQnode();
-            this.handles[i] = new PQhandleElem();
-        }
-        this.nodes[1].handle = 1; /* so that Minimum() returns NULL */
+        this.nodes = Array.from({ length: size + 1 }, () => new PQnode());
+        this.handles = Array.from({ length: size + 1 }, () => new PQhandleElem());
+        this.initialized = false;
+        /* so that Minimum() returns NULL */
+        this.nodes[1].handle = 1;
         this.handles[1].key = null;
     }
     floatDown_(curr) {
